@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Pedidos · Pork & Beef</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --bg: #0d0e12;
+        --card: #161820;
+        --card2: #1e212b;
+        --line: rgba(255,255,255,0.08);
+        --gold: #f59e0b;
+        --green: #22c55e;
+        --red: #ef4444;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    [hidden] { display: none !important; }
+    body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        background-image: radial-gradient(circle at 50% 0%, rgba(245,158,11,0.08) 0%, transparent 60%);
+        background-attachment: fixed;
+        color: var(--text);
+        min-height: 100vh;
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px 16px 70px; }
+
+    /* Login */
+    #login { max-width: 360px; margin: 14vh auto 0; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 26px 22px; text-align: center; }
+    #login h1 { margin: 0 0 6px; font-size: 22px; }
+    #login p { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+    #login input { width: 100%; margin-bottom: 12px; }
+    #loginError { color: var(--red); font-size: 13px; min-height: 18px; margin-bottom: 8px; }
+
+    /* Encabezado */
+    header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.3px; }
+    h1 span { color: var(--gold); }
+    .stats { display: flex; gap: 10px; }
+    .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; text-align: center; min-width: 96px; }
+    .stat b { display: block; font-size: 24px; line-height: 1.1; }
+    .stat small { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat.p b { color: var(--gold); }
+    .stat.e b { color: var(--green); }
+
+    /* Barra de controles */
+    .barra { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+    .tabs { display: flex; gap: 4px; background: var(--card); border: 1px solid var(--line); padding: 4px; border-radius: 12px; }
+    .tab { border: 0; background: transparent; color: var(--muted); padding: 9px 14px; border-radius: 9px; font-weight: 700; font-size: 14px; cursor: pointer; }
+    .tab.on { background: var(--gold); color: #111; }
+    input, select { background: #12141a; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit; }
+    input[type=search] { min-width: 180px; flex: 1; max-width: 280px; }
+    .btn-mini { background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 14px; cursor: pointer; font-weight: 600; font-family: inherit; }
+    .btn-mini:disabled { opacity: 0.5; cursor: wait; }
+    .btn-gold { width: 100%; background: var(--gold); color: #111; border: 0; border-radius: 12px; padding: 13px; font-size: 15px; font-weight: 800; cursor: pointer; }
+    .ultima { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+    #aviso { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; font-size: 14px; }
+
+    /* Tarjetas */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; align-items: start; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+    .card.nuevo { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+    .card-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+    .nombre { font-size: 17px; font-weight: 800; word-break: break-word; }
+    .fecha { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+    .badge.nue { background: rgba(245,158,11,0.18); color: var(--gold); }
+    .badge.ent { background: rgba(34,197,94,0.15); color: var(--green); }
+    .dir { display: block; color: var(--text); text-decoration: none; background: var(--card2); border-radius: 10px; padding: 9px 11px; font-size: 14px; word-break: break-word; }
+    .dir small { color: var(--muted); display: block; font-size: 11px; margin-top: 2px; }
+    .envio { font-size: 13px; color: var(--muted); padding: 0 2px; }
+    .items { display: flex; flex-direction: column; gap: 8px; }
+    .item { background: var(--card2); border-radius: 10px; padding: 10px 12px; }
+    .item-tit { font-weight: 700; font-size: 13px; color: var(--gold); margin-bottom: 4px; }
+    .item ul { list-style: none; margin: 0; padding: 0; font-size: 14px; line-height: 1.6; }
+    .item li.sub { font-weight: 700; margin-top: 4px; }
+    .ico { display: inline-block; width: 24px; }
+    .total { display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 18px; border-top: 1px solid var(--line); padding-top: 10px; }
+    .total span { color: var(--gold); }
+    .acciones button { width: 100%; border: 0; border-radius: 12px; padding: 13px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .b-ok { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; }
+    .acciones { display: flex; flex-direction: column; gap: 8px; }
+    .acciones .b-del { background: transparent; color: #f87171; border: 1px solid #7f1d1d !important; padding: 9px; font-size: 13px; font-weight: 700; }
+    .b-undo { background: var(--card2); color: var(--muted); border: 1px solid var(--line) !important; }
+    .card.entregado { opacity: 0.6; }
+    .card.entregado .nombre, .card.entregado .items { text-decoration: line-through; text-decoration-thickness: 2px; }
+    .card.sel { outline: 2px solid var(--gold); outline-offset: 2px; }
+    .dia-sep { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding: 8px 4px 2px; border-bottom: 1px solid var(--line); color: var(--gold); font-weight: 800; font-size: 15px; }
+    .dia-sep small { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: none; }
+    .atajos { color: var(--muted); font-size: 12px; margin: -6px 0 12px; }
+    .atajos kbd { background: var(--card2); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; font-family: inherit; font-size: 11px; color: var(--text); }
+    .hist-box { max-width: 680px; }
+    .hist-tabs { flex-wrap: wrap; }
+    .barra-fila { display: grid; grid-template-columns: 92px 1fr auto; gap: 10px; align-items: center; padding: 4px 0; font-size: 13px; }
+    .barra-bg { background: rgba(255,255,255,0.07); border-radius: 6px; height: 12px; overflow: hidden; }
+    .barra-bg i { display: block; height: 100%; background: var(--gold); border-radius: 6px; }
+    .barra-fila b { color: var(--gold); min-width: 70px; text-align: right; }
+    .hist-item { background: var(--card2); border-radius: 12px; margin-bottom: 8px; font-size: 14px; }
+    .hist-item summary { cursor: pointer; padding: 10px 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center; list-style: none; }
+    .hist-item summary::-webkit-details-marker { display: none; }
+    .hist-item summary b { color: var(--gold); white-space: nowrap; }
+    .hist-item .cuerpo { padding: 0 14px 12px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .hist-item .cuerpo div { display: flex; justify-content: space-between; gap: 10px; }
+    .hist-item .cuerpo div b { color: var(--text); }
+    .hist-tabs { margin-bottom: 14px; }
+    .vacio { grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 60px 10px; font-size: 16px; }
+
+    #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #111827; border: 1px solid var(--gold); color: var(--text); padding: 12px 18px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 50; max-width: 90vw; text-align: center; }
+
+    /* Finalizar día */
+    .btn-cierre { background: transparent; color: var(--gold); border: 2px solid var(--gold); border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: inherit; }
+    .btn-cierre:hover { background: rgba(245,158,11,0.12); }
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 60; padding: 16px; }
+    .modal-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; width: 100%; max-width: 460px; max-height: 92vh; overflow-y: auto; padding: 20px; }
+    .modal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .modal-top h2 { margin: 0; font-size: 20px; }
+    .modal-x { background: transparent; border: 0; color: var(--muted); font-size: 22px; cursor: pointer; }
+    .campo-dia { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 14px; color: var(--muted); }
+    .kpis { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+    .kpi { background: var(--card2); border-radius: 12px; padding: 10px 6px; text-align: center; }
+    .kpi b { display: block; font-size: 18px; color: var(--gold); word-break: break-word; }
+    .kpi small { color: var(--muted); font-size: 11px; }
+    .cierre-sec { background: var(--card2); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; font-size: 14px; }
+    .cierre-sec h4 { margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); }
+    .cierre-sec .fila { display: flex; justify-content: space-between; gap: 10px; padding: 3px 0; }
+    .cierre-sec .fila b { color: var(--gold); }
+    .cierre-warn { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35); color: #fcd34d; border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; font-size: 13px; }
+    .cierre-vacio { text-align: center; color: var(--muted); padding: 24px 6px; }
+    .modal-btns { display: flex; gap: 10px; margin-top: 14px; }
+    .modal-btns .btn-mini { flex: 0 0 auto; }
+    .modal-btns .btn-gold { flex: 1; }
+    .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
+    #cierreLink { text-align: center; margin-top: 12px; font-size: 14px; }
+    #cierreLink a { color: var(--green); font-weight: 700; }
+    .nota { color: var(--muted); font-size: 12px; margin-top: 10px; text-align: center; }
+
+    .donde { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .zona-tag { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: rgba(35,26,18,0.1); color: #5a4a3a; }
+    .zona-tag.gps { background: rgba(21,128,61,0.15); color: #15803d; }
+    .btn-donde { font-size: 13px; font-weight: 700; text-decoration: none; padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(35,26,18,0.4); color: #231a12; background: rgba(255,255,255,0.35); }
+    .btn-donde:hover { background: #fff; }
+    .hace { display: inline-block; margin-top: 5px; font-size: 12px; font-weight: 700; color: #15803d; }
+    .hace.tarde { color: #b91c1c; }
+    /* Resumen de hoy */
+    .hoy { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+    .hoy > div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+    .hoy small { display: block; color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+    .hoy b { font-family: 'Alfa Slab One', Georgia, serif; font-weight: 400; font-size: 22px; color: var(--text); }
+    .nota-cliente { background: rgba(250,204,21,.18); border-radius: 8px; padding: 6px 8px; list-style: none; font-weight: 600; }
+    .hoy b.chico { font-family: inherit; font-weight: 700; font-size: 14px; line-height: 1.35; display: block; }
+    @media (max-width: 700px) { .hoy { grid-template-columns: 1fr 1fr; } }
+    .acciones .b-print { background: transparent; border: 1px dashed rgba(35,26,18,0.4) !important; color: #5a4a3a; padding: 9px; font-size: 13px; font-weight: 700; }
+    .horas-hoy { margin: 8px 0 12px; padding: 10px 14px; border-radius: 12px; background: #ffffff0d; border: 1px solid #ffffff1a; color: #f3e9df; }
+    .horas-tit { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #d8cbbf; }
+    .horas-barras { display: flex; align-items: flex-end; gap: 10px; overflow-x: auto; min-height: 76px; }
+    .hb { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 26px; }
+    .hb i { display: block; width: 18px; background: #ff7a1a99; border-radius: 4px 4px 0 0; transition: height .4s; }
+    .hb i.pico { background: #ff7a1a; }
+    .hb-n { font-size: 12px; font-weight: 800; } .hb-h { font-size: 11px; color: #a89a8f; }
+    @media print { .horas-hoy { display: none !important; } }
+
+
+    /* CARGAR PEDIDO (voz / manual) */
+    .mn-voz { display: flex; gap: 10px; align-items: stretch; margin-bottom: 8px; }
+    .mn-mic { flex: none; width: 76px; min-height: 76px; border-radius: 50%; border: 0; background: #ff7a1a; color: #1a0f08; font-size: 34px; cursor: pointer; }
+    .mn-mic.on { background: #ff3b30; color: #fff; animation: mnlat 1s infinite; }
+    @keyframes mnlat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    .mn-voz textarea { flex: 1; min-height: 76px; resize: vertical; border-radius: 12px; border: 1px solid #ffffff30; background: #120d0a; color: #fff; padding: 10px; font: inherit; font-size: 15px; }
+    .mn-estado { font-size: 13px; color: #cdbfb3; margin: 0 0 10px; min-height: 18px; }
+    .mn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mn-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #cdbfb3; }
+    .mn-grid .full { grid-column: 1 / -1; }
+    .mn-grid input, .mn-grid select, .mn-grid textarea { min-height: 44px; border-radius: 10px; border: 1px solid #ffffff30; background: #120d0a; color: #fff; padding: 8px 10px; font: inherit; font-size: 16px; }
+    .mn-total { font-size: 20px; font-weight: 800; color: #ffb347; }
+    .pb-caja.ancha { width: min(560px, 100%); }
+    @media print { #mnModal { display: none !important; } }
+    /* SE ACABÓ + MODO COCINA */
+    .pb-modal { position: fixed; inset: 0; z-index: 9000; background: #000a; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .pb-modal[hidden] { display: none; }
+    .pb-caja { background: #1c1410; color: #f3e9df; border: 1px solid #ffffff22; border-radius: 16px; padding: 18px; width: min(440px, 100%); max-height: 90vh; overflow: auto; }
+    .pb-caja h3 { margin: 0 0 4px; font-size: 20px; } .pb-caja p { margin: 0 0 12px; color: #cdbfb3; font-size: 14px; }
+    .ag-fila { display: flex; align-items: center; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #ffffff14; font-size: 17px; font-weight: 600; }
+    .ag-fila input { width: 26px; height: 26px; accent-color: #ff5a4d; }
+    .ag-fila.off { color: #ff8d84; }
+    .pb-acciones { display: flex; gap: 10px; margin-top: 14px; }
+    .pb-acciones button { flex: 1; min-height: 46px; border-radius: 12px; border: 1px solid #ffffff30; background: transparent; color: #fff; font-weight: 700; font-size: 16px; cursor: pointer; }
+    .pb-acciones button.ok { background: #ff7a1a; border-color: #ff7a1a; color: #1a0f08; }
+    #cocina { position: fixed; inset: 0; z-index: 8000; background: #100c09; color: #fff; overflow: auto; padding: 14px 14px 40px; }
+    #cocina[hidden] { display: none; }
+    .co-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; position: sticky; top: 0; background: #100c09; padding: 6px 0 12px; z-index: 1; }
+    .co-top h2 { margin: 0; font-size: 24px; } .co-top button { min-height: 48px; padding: 0 18px; border-radius: 12px; border: 1px solid #ffffff40; background: #ffffff12; color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; }
+    .co-resumen { font-size: 22px; font-weight: 800; color: #ffb347; margin: 4px 0 14px; }
+    .co-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+    .co-card { background: #221a14; border: 2px solid #ff7a1a; border-radius: 16px; padding: 14px; }
+    .co-card.listo { opacity: .45; border-color: #3ddc84; }
+    .co-card h3 { margin: 0; font-size: 26px; } .co-card .co-sub { color: #cdbfb3; font-size: 16px; margin-bottom: 8px; }
+    .co-item { font-size: 21px; font-weight: 800; margin: 10px 0 2px; color: #ffb347; }
+    .co-card ul { margin: 0; padding-left: 20px; font-size: 19px; line-height: 1.45; }
+    .co-card li.nota-cliente { color: #ffd966; font-weight: 700; list-style: none; margin-left: -20px; }
+    .co-btn { width: 100%; margin-top: 12px; min-height: 56px; border-radius: 14px; border: 0; background: #1fbf63; color: #06210f; font-size: 20px; font-weight: 800; cursor: pointer; }
+    .co-card.listo .co-btn { background: #ffffff1a; color: #fff; }
+    .co-vacio { font-size: 26px; text-align: center; margin-top: 12vh; color: #cdbfb3; }
+    @media print { #cocina, .pb-modal { display: none !important; } }
+    @media print {
+        .card.para-imprimir { break-inside: avoid; margin-bottom: 8mm !important; }
+        body { background: #fff !important; }
+        header, .hoy, .barra, .atajos, #aviso, .dia-sep, .modal, #toast, #login, .grid > :not(.para-imprimir) { display: none !important; }
+        .wrap { padding: 0; max-width: none; }
+        .grid { display: block; }
+        .card.para-imprimir { box-shadow: none; background: #fff; opacity: 1; margin: 0; max-width: 80mm; }
+        .card.para-imprimir::after, .acciones { display: none !important; }
+        .card.para-imprimir .dir small { display: none; }
+    }
+
+    /* Barra superior fija, menú y tablero */
+    header { position: sticky; top: 0; z-index: 25; background: var(--bg); padding: 10px 0; margin: -10px 0 8px; border-bottom: 1px solid var(--line); }
+    .acciones-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .menu-wrap { position: relative; }
+    .menu-mas { position: absolute; right: 0; top: calc(100% + 6px); min-width: 210px; background: var(--card2); border: 1px solid var(--line); border-radius: 12px; padding: 6px; z-index: 40; box-shadow: 0 14px 30px -10px rgba(0,0,0,0.8); }
+    .btn-abierto { font-weight: 800; }
+    .btn-abierto.abierto { border-color: rgba(34,197,94,.6) !important; color: #4ade80; }
+    .btn-abierto.cerrado { border-color: rgba(239,68,68,.7) !important; color: #f87171; background: rgba(239,68,68,.12); }
+    .pago-fila { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .acciones .b-pago { width: auto; flex: 1; padding: 9px 12px; font-size: 13px; background: transparent; border: 1px solid rgba(35,26,18,.35) !important; color: #5a4a3a; }
+    .acciones .b-pago.si { background: rgba(21,128,61,.15); border-color: rgba(21,128,61,.6) !important; color: #166534; }
+    .acciones .b-avisar { width: auto; flex: 1; padding: 9px 12px; font-size: 13px; background: #25b355; color: #06210f; }
+    .menu-mas button { display: block; width: 100%; text-align: left; background: transparent; border: 0; color: var(--text); font: inherit; font-size: 14px; font-weight: 600; padding: 11px 12px; border-radius: 8px; cursor: pointer; }
+    .menu-mas button:hover { background: rgba(255,255,255,0.08); }
+    .hoy { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .hoy .k-pend b { color: var(--gold); }
+    .zonas { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; }
+    .zonas:empty { display: none; }
+    .zona-chip { background: var(--card); color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .zona-chip.on { background: var(--gold); border-color: var(--gold); color: #14100d; }
+    #btnVista { display: none; }
+    @media (min-width: 1000px) { #btnVista { display: inline-block; } }
+    .tablero { display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; align-items: start; }
+    .tablero .col h3 { margin: 0 0 14px; font-size: 16px; display: flex; justify-content: space-between; align-items: center; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+    .tablero .col h3 span { background: var(--gold); color: #14100d; border-radius: 999px; padding: 1px 10px; font-size: 13px; font-weight: 800; }
+    .tablero .col.ent h3 span { background: var(--green); }
+    .tablero .col-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; align-items: start; }
+    .tablero .col.ent .col-lista { grid-template-columns: 1fr; }
+    .col-nota { color: var(--muted); font-size: 12px; margin-top: 12px; }
+
+    @media (max-width: 700px) {
+        header { position: static; border-bottom: 0; margin: 0 0 6px; padding: 0; }
+        .hoy { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .hoy > div { padding: 8px 10px; }
+        .hoy b { font-size: 18px; }
+        .hoy > div:nth-child(n+5) { display: none; }
+        .atajos { display: none; }
+    }
+
+    /* ===== Tema "Brasa" (mismo estilo que la página de pedidos) ===== */
+    :root { --bg: #14100d; --card: #1c1612; --card2: #241d17; --line: rgba(255,237,213,0.12); --gold: #ff6a2b; --text: #fbf3e8; --muted: #bfae9b; }
+    body { font-family: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-image: none; }
+    h1, .modal-top h2, #login h1 { font-family: 'Alfa Slab One', Georgia, serif; font-weight: 400; letter-spacing: 0; }
+    .dia-sep { font-family: 'Alfa Slab One', Georgia, serif; font-weight: 400; }
+    .tab.on { background: var(--gold); color: #14100d; }
+    .btn-gold, .btn-cierre { font-family: inherit; }
+    .btn-gold { background: var(--gold); color: #14100d; }
+    *:focus-visible { outline: 3px solid #f4b740; outline-offset: 2px; }
+
+    /* Cada pedido es una comanda de cocina */
+    .card {
+        --card: #efe6d2; --card2: #e4d9c0; --text: #231a12; --muted: #6b5a48; --gold: #b83c0a;
+        --line: rgba(35,26,18,0.25); --green: #15803d;
+        position: relative; background: #efe6d2; color: var(--text); border: 0; border-radius: 3px 3px 0 0;
+        margin-bottom: 10px; box-shadow: 0 10px 22px -12px rgba(0,0,0,0.85);
+        background-image: repeating-linear-gradient(to bottom, transparent 0 27px, rgba(35,26,18,0.045) 27px 28px);
+    }
+    .card::after {
+        content: ''; position: absolute; left: 0; right: 0; bottom: -10px; height: 10px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10' viewBox='0 0 20 10'%3E%3Cpolygon points='0,0 20,0 10,10' fill='%23efe6d2'/%3E%3C/svg%3E") repeat-x left top / 20px 10px;
+    }
+    .card.nuevo { box-shadow: 0 0 0 3px #ff6a2b, 0 10px 22px -12px rgba(0,0,0,0.85); }
+    .card.sel { outline: 3px solid #f4b740; outline-offset: 3px; }
+    .card.entregado { opacity: 0.62; }
+    .card .total { border-top: 2px dashed rgba(35,26,18,0.45); }
+    .card .total span { font-family: 'Alfa Slab One', Georgia, serif; font-weight: 400; font-size: 22px; color: #231a12; }
+    .card .item { border-left: 3px solid #b83c0a; border-radius: 0 6px 6px 0; }
+    .card .dir { border: 1px dashed rgba(35,26,18,0.35); }
+    .card .badge.nue { background: #b83c0a; color: #fff; }
+    .card .badge.ent { background: rgba(21,128,61,0.15); }
+    .card .acciones .b-del { color: #b91c1c; border-color: rgba(185,28,28,0.5) !important; }
+    .card .b-undo { background: transparent; color: #5a4a3a; border: 1px solid rgba(35,26,18,0.35) !important; }
+
+    @media (max-width: 560px) {
+        .stats { width: 100%; }
+        .stat { flex: 1; }
+        .ultima { width: 100%; margin-left: 0; }
+    }
+</style>
+</head>
+<body>
+
+<!-- ========== PANTALLA DE CLAVE ========== -->
+<div id="login" hidden>
+    <h1><img src="data:image/webp;base64,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" alt="" width="40" height="44" style="vertical-align:-12px;margin-right:8px">Panel <span style="color:var(--gold)">Pork & Beef</span></h1>
+    <p>Ingresá tu clave para ver los pedidos</p>
+    <div id="loginError"></div>
+    <input type="password" id="inputClave" placeholder="Clave" autocomplete="current-password">
+    <button class="btn-gold" id="btnEntrar">Entrar</button>
+</div>
+
+<!-- ========== PANEL ========== -->
+<div class="wrap" id="app" hidden>
+    <header>
+        <h1><img src="data:image/webp;base64,UklGRo4WAABXRUJQVlA4WAoAAAAQAAAAdwAAgwAAQUxQSA4DAAABCjm0bZva8347tm3bebFtG53TqrNto8tXxrZt2/nt/78d3zlRdd69ETEB9O8yqna/OZuOXn349ifz7duHV4+S6Vc7CrpiQ9bdzWVS6c7awYWhqjJh5wum+MmW0eXgiRp1hml5ZmQ4LPXWxTNtvy+vAUf59WlMa7uuPAy192Uz7e3e2t4ruDWXeZK25PXY2O/Msx8HeSn/Id/TJr9nWr1lHn9rvBGyIJt53s41Hih9joFoSbua73wgDWnWNp6BGU9aDUpngNpBGg3L8UGlkdq4WQxY016Txok+uKaJFjW/M4C/V9Qg+gED+T6p28mANsrG+mCTohopcKXUVBJynQF+1aiYykC3Cgp+h+1bIXk7GfBGmsvA7yDrMnxWUjMfQSMngMFBKVVyMciqLmOjj6KVEJOMQ2Kc2FgfyaFih7EICBXOxCKzqMh0huZ0kdN4kEBEOh5pkXwuQ9Tlm4+J5TuNCfHFYxLPVYyhSjwuLi7PVFwsz0pciOcwLobnNi6G5zEuj3k+42J44nGJ50nHxf4OxONieAwur3ke4/KY5zIulieAi+VZiQvxTMXF8ri4uDzlcDE8oVmYJIXw0G1MLhP3Qkzm87mYuHyRaXikR/DRaTzIEZyOx3SRIrlYZBYWodNYBBzhsVgMFYtNwiE5RoxW4kCOxBJZGJjiMmgnBoakVsmFjyrLoQB8liRXy4bOVpVFK6EjR3rcW9jeGnk0FLahpPI4ZCdJablfcMWXUUN94OpBqldCtdBRHmZhOhOsjkq+h+h5QUfH2gnwfK9IenbMhCatCek6Bpic3o6+Q7MgyR5EOvdMhiOlm6N3ky9QfG3k6F7pLQzPKzr6Fz0CgS1KGhZzxTdkec1scMXLSqiSynAsL1bBR7KmGC3CwZDEsLsYUJgMqpIBH1lH7gz4ppPs09CRI71YAmyG5NFA2Ayp3AvZHkdpnjdwUZyih3BZRXsZ4HuUDPRB76mgWAJsP0neaR94kjadgT9NUpUM+MhKCbvrI0ghMhb5KC6UUJshWU6sAhIplcSorIuiof/XAVZQOCBaEwAA8EcAnQEqeACEAD49GIlDIiGhFxw+ZCADxLYDFAHaAJRmFRV/u38t/ar2T64/ZP7L+l/7RyntR+Vdy3/zv7z+Q3wA/1nsA/Mn/A9wD9Qf2G6yv9b/4H+Z9gX7Bftx7yf+M/yn9d9yn+M9QT+o/4D/2+sN7Cv7h+wT/NP8d6uf/T/bj4NP6//uv2x9pL/+ewB///UA4TP+6/h34Jf3bw38Y3o72o9bjM/1Bf4Xoj/IvtV+e/unoB/ofD34k/x/qEfin8Z/zn5g8KprXmC+1X0n/U/4L91f8B6X2qJ329gL9Yv9J5QnhXej+wB/OP7n6sn9D/6f9B+U3uD/OP8b/3/9P8BH8u/pv+7/vvtme0D9t/aL/bRxekTB6v9HPLfXxfmnIgax927Jbn57sDHCe0JVz6R7Bkg0ICZLhtQCmxteVcLIV8BpdaQmz0MzT7Y5joDylcve2fkFc7orOyISsH9ZVUJ4eAOJ+QgNUSWRSt+XLxm+mI0B//3gwksSvTHf/IlQqkIklsFEHEkHqhmlyl2UuIGntSL7WfZZo5br7WNZp3o7599gSazyzqnvBDG1uwRcU2XnRvBDYFidFj7TPOkJG+zs5U8T0niO6IGGCxwzAJugOgYCajn7aoPjOo5oP/q8sByCdvJ7Fa5IySLkrrVDOm7/O2gRON6GLHm1SNeSnrHhtLRsBriUlZgcATr01E2kUJG9QF1MIp2USy1v1aCs/j2kk4f33C3f4qcpMChNJnGSc460YCJzA/m+W1q9M2SscE7OTfwe3wAA/v9gGYX+81bA4o8OB1hRgZj/3oNCwxDEOVcxozUEp81m6ZXl5OliUPNcrCebNyKgD9mf5UTDIv2+ncQWbjPkT8jG+zBxoRdUv0qyKjOnZn95mQT3CUDkjMB7lZtiVLntIt7Rd6BwVQkp64mgzYOgFb3VYZtStkCbJ7apEE5AGH2tEQydp5t7f/HLNEKzvtC8W/eF/YM+ta7o4tBi2ZY2u9/TbbpRFvjXbHmLxX3a5cSzdLowDTR3O/p7ZV5x9y7QsUDlwHBO3F8ir7QvqS1hEpo8AlVfk6HxhnO824YdP9VBbxaOWDfrDgNv1f7gpYJpxFREVnpMSFGj3w8/E/TDjGss2UK03x9C1JFhm4tb/livWx70slYmmXt4TituVad3/6l70pvUoa43hAQ0AKsVhp0snBTv3vTNv+FJDZHG5OCRwupfPqGcvkzUea9HYkjQgwuRJ3jpgWvvszvsh3CQGF/vd6B3dzPxxEqnF9oOSmUOIfDOQcmb25XyZDUsJR5/8FGBRo51upPFsjFP1Fmy2eWRm6B46E2oufQLxhodGc07IbViyiGGzRAvx3dcf1fxMZkgzvIEbLh83It+f/xTzFoHkYcmCCvz/mj91CF4CnTHDxq6Lm6R+jBtY/D/pDN7SveJqYimahtgHQpBQK1RfGl4jSc7WjBizN9qLKy6+mFnBSvKI059540BwfBcW6i0xB5UdEfYALLH0wOPSoy0rx+aF4cDOT3wQ8JgvugEDo9VzZyYv1q2BjFvMIJlKnO4JE2L68J26IvdnMS/08FX77u0vKzmNYpEeIIMRlnKfPfeC5FP4IRbjZG/szwX5VcaQwDGwj3M/531V5uc3p2u+fOUyo5/ZdUwOCBq2s4Gdww3FI2pi1XvrFaLP8t908ldyR2NW32GKIvhc1+ATfPf6GxQVERQLTA2tMBtjNRNIc6hm+yrQUExqYPL/AG0ytoRjBEs1RgjE1z2CXMixHj86wk60bjr58LfN6DSCLCnz3e9YMJjP16fVPZk+cFRq1RuWVza/J2rwuLdp5XbxGmvyihLh5U3GVrsDp13TZoanHfPs5qJX1I6AYsIFMTRdkxI33RnFo+aZh9m8Rf3xmvtcD6i9o7dqPcY8b8u5szUtg+z8yezo4lxHUDXsbkFsDojFC/pQkgZQAc+llt6nTfBi/UhebPcI3lXYWV8VE7hIZkDWuRUngk0D5RmY+WKa95v5Y8uhQhyysev4lV0LUKMMVoMEgPoV8W6ry1pXyOAXyjdxn956O3r1l0pZQI0ZWA5Y8zcV+9c6eLo/9pKunIXF9U+UUx9NByhZfqwvDmAS4TwD1fQgea4Rm9bPH5A93oc8jvsWRQGcPPJmRko8hh92OomK0Tbf3kGamG6hKPLlPva0FO6W+kMDmJuzvqlITBdPoG0h240C3MXpj9NxZbOFbydznJ+NdWjPujKPGEzx8zHEcxM/wdlmJSqXFnWj2YuInm+pRagCrO0ldkEZNpO3i8P8GRbyqmvZLXMhxlWE6Si0aH2M/Rd770gKl6QDV2oUIeFc1NteLqv+C3//56lMLhjbkklTm9nzOsWtdMMHWgiQWlrVO9voEst8pdzpKnxHJ5t+5sN102BDyKJH2Qv8b6tdb3qxrvnUDh6nP+0aDDzWBfcPgCDSascEHv8AQfrP9T0y0SUEbdMwN/2JxQONoPTvs/zoLYiftGTY2TJM+Cwccp6aOm12IybSTptoM4o2vqDEyug5JQRZPp8p2CzvZ3anYc1tD4Z5dWgGAs3xGqeE/RL5gg+LIoKemCy9YEjFmpAXSanDdTFlPruqpHuAPcIITLWOPX+J5LyrGopQ6QWI727lWSbh/+gyVWsfiKOFrt36M27QfrnRDvHVVze7+QvsrlIwK36yG8hOCvpyAMk/+o7H0grgAoMCmClQvmQwaUei9rIQ3o9caF2Y9y8HjzacAoPEIeKp3v3JD9r6fIGOUTLqN3vRClSZ34vUm7vpZ1VJk/Wkd0eXb+DxTiDBqWWJjIyrE3WXCxqhZ2GR4WYHL43BSPiJQUsDW7UVQw1q3K5ju9fGIbcliiya1q+81Rul94ZUkf+ccvz4R6iQU5Lnp60Qd3vLwUsB7JPSSEhVtVx8krnFgQjfR0g0/0q4DedakpSxtpnIYsBHhx2w62tiY7X872oN31vxZEnTUagl+lebinJgJ5hzdgpDLoeVXs+wbMm6+Sb071kE0KHU9aCLmzYXBcJQQ0ZtBhumu5xfP3iZEQiNc3ZI2jpQ17bWndtBMgrNnHVW6vYLX1pOCmMcmE+vxPavqCs3gNjCycABpaYL2e/vu4+eM2BF5t6yDXN0OvA11RfzH+twWMMN1Pk9G7mCN8kMJ5Ymd/aA70LL+6RwrcMWyuwzJnes3K9s9KyvMiYwyib7PUqtBMyprBV/J+2T+J7fRvcDJITqxjTUzCu60KylW17n4ZC6KSM4S0FUb7jijq3ibDaOZ9NF/KbkWYv11pTjLbA8oH6oaNF7lKbEAKU6hDXc7ESwFnK/OEMzXysvwA5PhS1ELoCZTZ/G62qN4AIbysIKGDVhp4qymTfHxfwugX7CE7R/+MYU9RLnfj9H8+vrKcXPA952qvPDSVqszGbvuqNEzySQZp6wMnX7+Yqjg/zdPjKo8L4SaEQ2d7TLShHpqAXhtzyRw9rOQLcIusfs1bVMiu1BTZDE2WUpyrNIn8EUZEenmOaNkHz/0scg5fBZR6wRmJOv8iyehDzhIp3SRrtBypgYuBtnaKdoTsizaz+kqhWT6EEWrxq9mW4k09V39QULHSyFfl6fZh/6vpg5/edEjY0nFOVoBJJPTAxP1DwvtUH4tUQ6MrE6rexo2baYvoQxRWb+/aitlY4Dd2V12WuSRNdHumcZGa75FgWKbjJwyYJYCSiCkM1Y04awJgkHHMXcAZ081XwT0k/FClRQ5mwFwnWoVjjVc1dU+RlZKRYHwYz1J66N1dKYz/q4Y6y+H1pcogcLgL6XagMNSEK/0DwQOITZMQRDxeSNdVjbkKjThvzWudXS5VrAyxbsLol/N1DGhtrkq+tjAQ10Yg6js37dc0LqaHpKNdGOsirFPn3uWpHG+xFMMzV+f8asx/UORO9eot2vpYE7RhL/ie9b9rxBS0stu39eTJY2e9Poky7+zP93gEp8vqVaCxikbiT64DCMUhbrTybZtZUnNUgnLxbZdubIy2qdlICS/7Zc5FyYbk+7ER/4tezTJ8+vQHokyLwNbZcLcNPnNJKPwUrygBSbgN8G71+wqR/RzUqULHHD/PhdMvC+QBDCNo70Jo9tidPdDFS9imwzNLXvc1aPUhuZGCVMevY+mgwLUL94tnpjW8uLweuoRkl0qhD4od4rHX6ZMt9Gc1wJ85JKycqmWgTe4Y8P29cYQ9MXUctQn4Ek/MlPZrBpLESu+G7I9/BRzSvgApLkSbRxKi7bfTu5WYw4Hk7eFHb/xlVhYKtSjOxoSMDn/itHgfHS+WGcTbihImOBEtdAWdrEgOzbIjJNQSYKjl6X3c0Pa4KWJSAT3/Ues3sEMT3reAvp8xU62Go8ao2c6uYyLc65b9hERPK8vVgDnfpb/8ly99XIAf8HGLGuIw3or8S4RcaCfPIuFyvIfz6qAiOee4tvYC5W8I+DSjqpeodHJk7mnb1U07HRk1ISeA1jkuFwsTcqKU55s4W20vl5STCh1LpwIOfRchnyZvTVwvOg2rPM13s0mTQSGPT7t/VPzeXC5NH0weZRx5lG8VQv0tlqF9u+S8Ny+VKAdkB7AOiuYIMWl1VfXiYgLBh+011hUY6o47g3L/dUavydSBl5bhheuKYIFpnj3sR+6fj4fyswVjeOsDUE+db/X+xwqVwOR01xMD/VNwimWolHIR25DAbRu9MWNcJhPWkxXa5CL7t9upseICJbtVbJE3umRgcR7J56jmKwyVHX/KWH/X3QgxyV0uokxlglI2b4L4K9SdeUPxih8dF/R2zxIQ1rjQg+ZLVgdQxIq/PqR/2qHbrMg33XrPippxPrSz8uSRNinm7cB/XQ98xMMuRN+0pKY3PVyeFpnmriYT9ZnnjDYNoyf9VZ0YVx3Kr5aAYgR2fd8JsOu9oO5PDB7L4YFs/hV6skJuvmomv0xSJ+2o4vq8Yvgj27tb4la4qaRE/WdbFiv5Fg23dZNGpR4+pJD5lJRxcCHqaSuHIJjW0JHZ78bWPMYuH5MyMqGVdko4BpHjism7OsDUff2N0iSWLBGJOOfnhUtFh1TiVqmmz//IrvJ3AkEMxegdaaRth8yIfzAYoAfQcHKIFrwzgzCNzN8R0EjTB+sGdEyV2F2f+2l344Ic39kHq5xguTltWyj59WF+FquVs6dYnb3meY3Sk9omLwv9wNpLYnkIKmCpYiCnYVLd9rx282sXQCNoqT0x/JIeBZEX+5WvjpinI0QyvAQFokLanYNUzv/3yzO9NbzVUAwDwopZuA8JuwSY/6OOVxcQvA2gpgJNl8LruCaBvPKmX0lggcfZ0yA/20eQm3zJVlWTQv32Cleva9gx2TJ9Yt15LefRvpBOrqyvYPfcrqyvYPeItqaAdiRIAnEjKmcmWk3NkGqSgMTXAyInZE70g6ljNZgPbPqkvy6MN36RZl1+XTC20FU2YOsOF9ApFwVism4XVjQdH4W1xL5ovdidRApdPOrCVx1xmGbkJ8OeCMUTchXMUwr5+d7YeAs5y3LiCVsmtT2iBkEhkXCrr+BilaU+i5bikUn3XpSyFFWblai+GIQrHk1/wvB/rYv9Ux6VqFaVlPBJPDoCKhOt+LP74SVAhycamOb++Ue2iBBBaDIandV7mKNpF2JnG6KffMiNdEyQLBYXxJclSNmO/Fh+NiBOXSRAM5kPvtQC0E7Hi6hwbmxG5191Ql5HrIhLKBEkuFx6vAgW8MlrZc9M89qazS915x1PMvQ/b+EPP1bNyZ8Fe5R/kEotdhRZRd7vXFt4/tZXdG6ijrgUtcvgJ+dv/zdGah05Oi8xC6HNHXP9Wo8VPe/sFSmnbIlX1sT592DupMIIH2faEC3s8iw/V/RBfCsBzhNYuj35pUFJPvtqR2ucWfXnt9fOY1NM726jvrK3eHCujA0wu0UxUItT4BciDrp8wM6TV0XJtl8lznqYzdJl+YpxpQphoPkt2va7a81Rdic8RYCkQB3kFC8QOqtH/b6A2Gj+Gv/u5GDxD4r5DaPGLiJ3tH8JvzBH9Xkp5+rFAZfckuOF15GNu0mlurr6tuUnYcA9Kv61jVrHVR6utiCZJfOV7S9PUuhTYhhJAQXYoq4t0KcnKQihirWMlfPrGoQibX78/wy7uO0mLcsJ9r7jcMkh3zQ8eVPeTvfQSA3ps959gFQa5/qwXs+zQsh3pLwVSleibZepRB1BAdCF4/0tqeAp7KITbgnNP2ZWu/ATFrfYkntGFQY0tZDNCCmmRY/at1lAkueJ6MEHaamzz2rqtxMSODnATEXjxs/Wt5lB+fhoEd6dwhF0Q5Qvsgk7e210MkAnF0Ip1y/apeSlGJHV4ORI9v696h9rcY0wvgomJMLd+6E4dyUskhW4Xr7UcEl4/jOZFtjOFwgnNPcNpf0xpSsrwCqI6+onTNfl6E/Wc4JxI14WIzbN3Y3JAlL+qzCxsss1prEO046oe7817aKUXVi526efT1VsmuC52Yn514VuHi2WkHC+WwA29JVHgu/4K6bYZJEMjoKR6qCYwuaSiqc7lt+SrFF11w2KiayLQO5oORyKaPYB9RBK2QZ5/dj0KDIbb87cFKAc6qAdjwI5zcTPtaspUZImm+sZ34LxyFH89Vtqz6QN2CKS9wwanwAADz1AAAAAAAA==" alt="" width="34" height="37" style="vertical-align:-10px;margin-right:8px">Pedidos <span>Pork & Beef</span></h1>
+        <div class="acciones-top">
+            <button class="btn-mini btn-abierto" id="btnAbierto" title="Abrir o cerrar la recepción de pedidos" hidden>🟢 Abierto</button>
+            <button class="btn-mini" id="btnManual">🎤 Cargar pedido</button>
+            <button class="btn-mini" id="btnCocina">👨‍🍳 Cocina</button>
+            <button class="btn-mini" id="btnHistorial">📚 Historial</button>
+            <button class="btn-cierre" id="btnCierre">🔒 Finalizar día</button>
+            <div class="menu-wrap">
+                <button class="btn-mini" id="btnMenu" aria-haspopup="true" aria-expanded="false" title="Más opciones">⚙️</button>
+                <div class="menu-mas" id="menuMas" hidden>
+                    <button id="btnSistema">🩺 Estado del sistema</button>
+                    <button id="btnAgotado">🚫 Se acabó…</button>
+                    <button id="btnLocal">📍 Ubicación del local</button>
+                    <button id="btnSonido" title="Sonido cuando llega un pedido">🔔 Sonido</button>
+                    <button id="btnPrintAll">🖨️ Imprimir pendientes</button>
+                    <button id="btnCsv">⬇️ Descargar pedidos (Excel)</button>
+                    <button id="btnSalir">🚪 Cerrar sesión</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="hoy" id="hoy">
+        <div class="k-pend"><small>Por entregar</small><b id="cntPend">0</b></div>
+        <div><small>Sándwiches por preparar</small><b id="sandPend">0</b></div>
+        <div><small>Sin cobrar</small><b id="sinCobrar">$0</b></div>
+        <div><small>Vendido hoy</small><b id="hoyVendido">$0</b></div>
+        <div><small>Entregados hoy</small><b id="hoyPedidos">0</b></div>
+        <div><small>Ticket promedio</small><b id="hoyTicket">$0</b></div>
+        <div><small>Lo más pedido hoy</small><b id="hoyTop" class="chico">—</b></div>
+    </div>
+    <span id="cntEnt" hidden>0</span>
+
+    <div class="barra">
+        <div class="tabs" id="tabsEstado">
+            <button class="tab on" data-filtro="pendientes">⏳ Pendientes</button>
+            <button class="tab" data-filtro="entregados">✅ Entregados</button>
+            <button class="tab" data-filtro="todos">Todos</button>
+        </div>
+        <input type="search" id="buscador" placeholder="🔍 Buscar nombre o dirección">
+        <select id="orden">
+            <option value="viejos">Más antiguos primero</option>
+            <option value="nuevos">Más nuevos primero</option>
+        </select>
+        <button class="btn-mini" id="btnVista" title="Cambiar la forma de ver los pedidos">▦ Tablero</button>
+        <button class="btn-mini" id="btnRefrescar">🔄 Actualizar</button>
+        <span class="ultima" id="ultima"></span>
+    </div>
+    <div class="zonas" id="zonas"></div>
+
+    <div class="atajos">⌨️ Atajos: <kbd>↑</kbd> <kbd>↓</kbd> elegir pedido · <kbd>Enter</kbd> marcar entregado · <kbd>Delete</kbd> borrar</div>
+    <div id="aviso" hidden></div>
+    <div class="grid" id="grid"></div>
+</div>
+
+<!-- ========== FINALIZAR DÍA ========== -->
+<div class="modal" id="modalCierre" hidden>
+    <div class="modal-box">
+        <div class="modal-top">
+            <h2>🔒 Finalizar día</h2>
+            <button class="modal-x" id="cierreX" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="campo-dia">Día a cerrar: <input type="date" id="cierreDia"></div>
+        <div id="cierreCuerpo"></div>
+        <div class="modal-btns">
+            <button class="btn-mini" id="cierreCancelar">Cancelar</button>
+            <button class="btn-mini" id="cierreCopiar">📋 Copiar resumen</button>
+            <button class="btn-gold" id="cierreGuardar">Guardar cierre en la planilla</button>
+        </div>
+        <div id="cierreLink"></div>
+        <div class="nota">Cuenta solo los pedidos marcados como entregados. Si volvés a cerrar el mismo día, se actualiza.</div>
+    </div>
+</div>
+
+<!-- ========== HISTORIAL DE CIERRES ========== -->
+<div class="modal" id="modalHist" hidden>
+    <div class="modal-box hist-box">
+        <div class="modal-top">
+            <h2>📚 Historial de cierres</h2>
+            <button class="modal-x" id="histX" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="tabs hist-tabs">
+            <button class="tab on" data-vista="dias">Por día</button>
+            <button class="tab" data-vista="semanas">Por semana</button>
+            <button class="tab" data-vista="meses">Por mes</button>
+            <button class="tab" data-vista="stats">Estadísticas</button>
+        </div>
+        <div id="histCuerpo"></div>
+    </div>
+</div>
+
+<!-- ========== UBICACIÓN DEL LOCAL ========== -->
+<div class="modal" id="modalLocal" hidden>
+    <div class="modal-box">
+        <div class="modal-top">
+            <h2>📍 Ubicación del local</h2>
+            <button class="modal-x" id="localX" aria-label="Cerrar">✕</button>
+        </div>
+        <div class="cierre-sec" id="localEstado">Consultando...</div>
+        <div class="campo-dia" style="flex-direction:column; align-items:stretch; gap:6px;">
+            <span>Dirección de tu local</span>
+            <input type="text" id="localDireccion" value="Arroyo Cordero 1954, Virreyes, San Fernando, Buenos Aires">
+        </div>
+        <div class="modal-btns" style="margin-top:0">
+            <button class="btn-gold" id="localBuscar">🔍 Buscar en el mapa</button>
+        </div>
+        <div class="modal-btns">
+            <button class="btn-mini" id="localGps" style="flex:1">📡 Estoy en el local: usar mi ubicación actual</button>
+        </div>
+        <div id="localResultados" style="margin-top:12px"></div>
+        <div class="nota">De este punto sale el cálculo del envío. Mirá el mapa antes de guardar.</div>
+    </div>
+</div>
+
+<div id="toast" hidden></div>
+
+
+
+<div class="pb-modal" id="mnModal" hidden>
+    <div class="pb-caja ancha">
+        <h3>🎤 Cargar pedido</h3>
+        <p>Tocá el micrófono y decí el pedido (por ejemplo: "dos por uno con papas, uno de melt y otro de mozza, para Juan Pérez, calle Mitre 123, San Fernando, sin cebolla"). Revisá los datos y guardá.</p>
+        <div class="mn-voz"><button class="mn-mic" id="mnMic" type="button" aria-label="Hablar">🎤</button><textarea id="mnTexto" placeholder="Acá aparece lo que dictás. También podés escribirlo."></textarea></div>
+        <div class="mn-estado" id="mnEstado"></div>
+        <div class="mn-grid">
+            <label class="full">Nombre<input id="mnNombre" autocomplete="off"></label>
+            <label class="full">Dirección<input id="mnDir" autocomplete="off"></label>
+            <label>Combo<select id="mnCombo"><option>2x1 Con papas</option><option>2x1 Sin papas</option><option>1 Sándwich Con papas</option><option>1 Sándwich Sin papas</option></select></label>
+            <label>Cantidad<select id="mnCant"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+            <label>Estilo (sándwich 1)<select id="mnEst1"></select></label>
+            <label>Estilo (sándwich 2, si es distinto)<select id="mnEst2"></select></label>
+            <label>Zona<select id="mnZona"><option value="2000|San Fernando">San Fernando · $2.000</option><option value="3000|San Isidro">San Isidro · $3.000</option><option value="3000|Tigre">Tigre · $3.000</option><option value="0|Retira en el local">Retira en el local · $0</option></select></label>
+            <label>Total a cobrar<input id="mnTotal" inputmode="numeric" class="mn-total"></label>
+            <label class="full">Aclaraciones<textarea id="mnNota" rows="2" placeholder="Sin cebolla, timbre 2B…"></textarea></label>
+        </div>
+        <div class="pb-acciones"><button id="mnCancelar">Cancelar</button><button class="ok" id="mnGuardar">Guardar pedido</button></div>
+    </div>
+</div>
+
+<div class="pb-modal" id="sisModal" hidden>
+    <div class="pb-caja ancha">
+        <h3>🩺 Estado del sistema</h3>
+        <p>Revisa que todo esté bien y muestra los errores que tuvo la página. Si algo falla, tocá "Copiar reporte" y pegáselo a Claude para que lo arregle.</p>
+        <div id="sisCuerpo">Revisando…</div>
+        <div class="pb-acciones"><button id="sisCerrar">Cerrar</button><button class="ok" id="sisCopiar">📋 Copiar reporte</button></div>
+    </div>
+</div>
+<div class="pb-modal" id="agModal" hidden>
+    <div class="pb-caja">
+        <h3>🚫 Se acabó</h3>
+        <p>Tildá lo que se te terminó. En la página aparece como "Agotado" y nadie lo puede elegir.</p>
+        <div id="agLista"></div>
+        <div class="pb-acciones"><button id="agCancelar">Cancelar</button><button class="ok" id="agGuardar">Guardar</button></div>
+    </div>
+</div>
+<div id="cocina" hidden>
+    <div class="co-top"><h2>👨‍🍳 Cocina</h2><button id="coSalir">✕ Salir</button></div>
+    <div class="co-resumen" id="coResumen"></div>
+    <div class="co-grid" id="coGrid"></div>
+</div>
+<script>
+    // ============================================================
+    //  CONFIGURACIÓN
+    //  URL del Google Apps Script (la misma que usa la página de pedidos).
+    // ============================================================
+    const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbw-Z44SDZTsHFdt9W07pTcn7WiOImW84ZmEqG_sIl1BFPU5LrwV43fEfLxBzDmSph1GDw/exec";
+    const REFRESCO_MS = 30000; // se actualiza solo cada 30 segundos
+
+    // ============================================================
+    //  ESTADO
+    // ============================================================
+    let clave = lsGet("pb_clave");
+    let sonido = lsGet("pb_sonido") !== "no";
+    let pedidos = [];
+    let filtro = "pendientes";
+    let busqueda = "";
+    let viejosPrimero = true;
+    let primeraCarga = true;
+    let timer = null;
+    const enVuelo = new Set();
+    const nuevos = new Set();
+    let sel = null, selIdx = 0, visibles = [], scrollSel = false;
+    let zonaFiltro = "", vista = lsGet("pb_vista") === "lista" ? "lista" : "tablero";
+
+    function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    // ============================================================
+    //  INTERPRETAR EL TEXTO DEL PEDIDO
+    //  Cada ítem llega como: [Ítem #1 (2x1 Con papas) x1: Sándwich ... | • Veg: ... | • Salsas: ...]
+    // ============================================================
+    function parsearPedido(texto) {
+        const items = [];
+        String(texto || "").split("\n").forEach(linea => {
+            const l = linea.trim();
+            if (!l) return;
+            const m = l.match(/^\[?Ítem #(\d+) \((.*?)\) x(\d+):\s*([\s\S]*?)\]?$/);
+            if (m) {
+                const detalle = m[4].split(/\s*\|\s*/).map(s => s.replace(/^•\s*/, "").trim()).filter(Boolean);
+                items.push({ n: m[1], menu: m[2], cant: m[3], detalle });
+            } else {
+                items.push({ n: "", menu: "", cant: "", detalle: [l] });
+            }
+        });
+        return items;
+    }
+
+    function lineaHtml(l) {
+        const nota = String(l).match(/^\[?Nota:\s*([\s\S]*?)\]?$/);
+        if (nota) return `<li class="nota-cliente"><span class="ico">📝</span><b>Aclaración:</b> ${esc(nota[1])}</li>`;
+        if (/:$/.test(l)) return `<li class="sub">${esc(l)}</li>`;
+        const m = l.match(/^(Estilo|Veg|Salsas|Quesos|Extras|Papas[^:]*):\s*(.*)$/);
+        if (!m) return `<li>${esc(l)}</li>`;
+        const clave = m[1];
+        let valor = m[2];
+        let etiqueta = clave;
+        let ico = "🍟";
+        const vacio = /^Sin agregados/i.test(valor);
+        if (clave === "Estilo") { ico = "⭐"; }
+        else if (clave === "Veg") { ico = "🥬"; etiqueta = "Vegetales"; if (vacio) valor = "Completo (sin cambios)"; }
+        else if (clave === "Salsas") { ico = "🥫"; if (vacio) valor = "Sin salsa"; }
+        else if (clave === "Extras") { ico = "➕"; }
+        else if (clave === "Quesos") { ico = "🧀"; etiqueta = "Queso extra"; if (vacio) valor = "Sin queso extra"; }
+        return `<li><span class="ico">${ico}</span><b>${esc(etiqueta)}:</b> ${esc(valor)}</li>`;
+    }
+
+    // ============================================================
+    //  DIBUJAR
+    // ============================================================
+    // Link de "Cómo llegar" (Google Maps) a partir de las coordenadas guardadas
+    function destino(link) {
+        const m = String(link || "").match(/query=(-?\d{1,3}\.\d+),(-?\d{1,3}\.\d+)/);
+        return m ? `https://www.google.com/maps/dir/?api=1&destination=${m[1]},${m[2]}` : "";
+    }
+
+    function tarjeta(p) {
+        const entregado = p.estado === "Entregado";
+        const items = parsearPedido(p.pedido);
+        const itemsHtml = items.map(it => `
+            <div class="item">
+                ${it.menu ? `<div class="item-tit">🛒 Ítem ${esc(it.n)} · ${esc(it.menu)} · x${esc(it.cant)}</div>` : ""}
+                <ul>${it.detalle.map(lineaHtml).join("")}</ul>
+            </div>`).join("");
+        const conGps = /^https:\/\/www\.google\.com\/maps\//.test(String(p.ubicacion || ""));
+        const mapa = conGps ? p.ubicacion : "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.direccion);
+        const badgePago = p.pagado ? `<span class="badge ent">💳 PAGADO</span>` : "";
+        const badge = badgePago + (entregado ? `<span class="badge ent">✅ ENTREGADO</span>` : (nuevos.has(p.id) ? `<span class="badge nue">🔔 NUEVO</span>` : ""));
+        return `
+        <article data-card="${p.id}" class="card ${p.id === sel ? "sel" : ""} ${entregado ? "entregado" : ""} ${nuevos.has(p.id) && !entregado ? "nuevo" : ""}">
+            <div class="card-top">
+                <div>
+                    <div class="nombre">${esc(p.nombre)}</div>
+                    <div class="fecha">🕒 ${esc(p.fecha)}</div>
+                    ${(() => { const m = entregado ? null : hace(p); return m === null ? "" : `<div class="hace ${m >= 30 ? "tarde" : ""}">⏱ ${textoHace(m)}${m >= 30 ? " · demorado" : ""}</div>`; })()}
+                </div>
+                ${badge}
+            </div>
+            <a class="dir" href="${mapa}" target="_blank" rel="noopener noreferrer">📍 ${esc(p.direccion)}<small>${conGps ? "📡 Tocá para ir a la ubicación exacta (GPS)" : "Tocá para abrir en el mapa"}</small></a>
+            <div class="donde">
+                <span class="zona-tag ${conGps ? "gps" : ""}">${conGps ? "📡 Ubicación exacta (GPS)" : "🗺️ Zona: " + esc(zonaDe(p))}</span>
+                ${conGps ? `<a class="btn-donde" href="${esc(p.ubicacion)}" target="_blank" rel="noopener noreferrer">🗺️ Ver en el mapa</a>${destino(p.ubicacion) ? `<a class="btn-donde" href="${esc(destino(p.ubicacion))}" target="_blank" rel="noopener noreferrer">🧭 Cómo llegar</a>` : ""}` : ""}
+            </div>
+            ${p.envio ? `<div class="envio">🚚 Envío: ${esc(p.envio)}</div>` : ""}
+            <div class="items">${itemsHtml}</div>
+            <div class="total">Total <span>${esc(pesos(numero(p.total)))}</span></div>
+            <div class="acciones">
+                <div class="pago-fila">
+                    <button class="b-pago ${p.pagado ? "si" : ""}" data-pago="${p.id}">${p.pagado ? "✅ Pagado" : "💵 Marcar como pagado"}</button>
+                    ${p.tel && !entregado ? `<button class="b-avisar" data-avisar="${p.id}" data-que="prep">🔥 Avisar: preparando</button><button class="b-avisar" data-avisar="${p.id}" data-que="sale">🛵 Avisar: salió</button>` : ""}
+                </div>
+                ${entregado
+                    ? `<button class="b-undo" data-id="${p.id}" data-estado="Pendiente">↩ Volver a pendiente</button>`
+                    : `<button class="b-ok" data-id="${p.id}" data-estado="Entregado">✅ Marcar como entregado</button>`}
+                <button class="b-print" data-imprimir="${p.id}">🖨️ Imprimir comanda</button>
+                <button class="b-print" data-copiar="${p.id}">📋 Copiar pedido</button>
+                ${entregado ? `<button class="b-print" data-msj="resena" data-id="${p.id}">⭐ Copiar pedido de reseña</button>` : `<button class="b-print" data-msj="camino" data-id="${p.id}">🛵 Copiar aviso "en camino"</button>`}
+                <button class="b-del" data-borrar="${p.id}">🗑️ Borrar pedido</button>
+            </div>
+        </article>`;
+    }
+
+    function etiquetaDia(iso) {
+        const m = String(iso || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!m) return iso || "Sin fecha";
+        const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        const txt = d.toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" });
+        return iso === hoyISO() ? "Hoy · " + txt : txt;
+    }
+
+    // Hora del pedido (de la columna Fecha) + día guardado en la planilla -> "hace X min"
+    function hace(p) {
+        const h = String(p.fecha || "").match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap])?\.?\s*m?/i);
+        const d = String(p.dia || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!h || !d) return null;
+        let hh = parseInt(h[1], 10);
+        if (h[3]) { const pm = h[3].toLowerCase() === "p"; if (pm && hh < 12) hh += 12; if (!pm && hh === 12) hh = 0; }
+        const t = new Date(Number(d[1]), Number(d[2]) - 1, Number(d[3]), hh, parseInt(h[2], 10));
+        const min = Math.round((Date.now() - t.getTime()) / 60000);
+        return min >= 0 && min < 24 * 60 ? min : null;
+    }
+    function textoHace(min) {
+        return min < 1 ? "recién" : min < 60 ? `hace ${min} min` : `hace ${Math.floor(min / 60)} h ${min % 60} min`;
+    }
+
+    function pintarHoras() {
+        let box = $("horasHoy");
+        if (!box) { box = document.createElement("div"); box.id = "horasHoy"; box.className = "horas-hoy"; $("hoy").insertAdjacentElement("afterend", box); }
+        const por = {};
+        pedidos.filter(p => p.dia === hoyISO()).forEach(p => {
+            const m = String(p.fecha || "").match(/(\d{1,2}):\d{2}(?::\d{2})?\s*([ap])?/i);
+            if (!m) return;
+            let h = parseInt(m[1], 10);
+            if (m[2]) { const pm = m[2].toLowerCase() === "p"; if (pm && h < 12) h += 12; if (!pm && h === 12) h = 0; }
+            por[h] = (por[h] || 0) + 1;
+        });
+        const hs = Object.keys(por).map(Number).sort((a, b) => a - b);
+        if (!hs.length) { box.hidden = true; return; }
+        box.hidden = false;
+        const max = Math.max(...hs.map(h => por[h])), pico = hs.reduce((a, h) => por[h] > por[a] ? h : a, hs[0]);
+        box.innerHTML = `<div class="horas-tit">⏰ Pedidos por hora · hora pico: <b>${pico}:00</b></div><div class="horas-barras">` +
+            hs.map(h => `<div class="hb"><span class="hb-n">${por[h]}</span><i style="height:${Math.max(8, Math.round(por[h] / max * 46))}px"${h === pico ? ' class="pico"' : ""}></i><span class="hb-h">${h}h</span></div>`).join("") + `</div>`;
+    }
+    function pintarHoy() {
+        pintarHoras();
+        const hoy = pedidos.filter(p => p.dia === hoyISO() && p.estado === "Entregado");
+        const total = hoy.reduce((a, p) => a + numero(p.total), 0);
+        const menus = {};
+        hoy.forEach(p => parsearPedido(p.pedido).forEach(it => { if (it.menu) menus[it.menu] = (menus[it.menu] || 0) + (parseInt(it.cant, 10) || 1); }));
+        const estilos = {};
+        hoy.forEach(p => parsearPedido(p.pedido).forEach(it => {
+            const cant = parseInt(it.cant, 10) || 1;
+            it.detalle.forEach(l => {
+                const m = String(l).match(/^Estilo:\s*(.+)$/);
+                if (m) estilos[m[1].trim()] = (estilos[m[1].trim()] || 0) + cant * (/^2 S/i.test(it.detalle[0] || "") ? 2 : 1);
+            });
+        }));
+        const topEstilo = Object.keys(estilos).sort((a, b) => estilos[b] - estilos[a])[0];
+        const top = Object.keys(menus).sort((a, b) => menus[b] - menus[a])[0];
+        let sand = 0;
+        pedidos.filter(p => p.estado !== "Entregado").forEach(p => parsearPedido(p.pedido).forEach(it => {
+            if (it.menu) sand += (parseInt(it.cant, 10) || 1) * (/2x1/i.test(it.menu) ? 2 : 1);
+        }));
+        $("sandPend").textContent = sand;
+        const cobrar = pedidos.filter(p => !p.pagado && (p.estado !== "Entregado" || p.dia === hoyISO())).reduce((a, p) => a + numero(p.total), 0);
+        $("sinCobrar").textContent = pesos(cobrar);
+        $("hoyVendido").textContent = pesos(total);
+        $("hoyPedidos").textContent = hoy.length;
+        $("hoyTicket").textContent = hoy.length ? pesos(Math.round(total / hoy.length)) : "$0";
+        $("hoyTop").textContent = topEstilo ? `${topEstilo} (${estilos[topEstilo]})` : (top ? `${top} (${menus[top]})` : "—");
+    }
+
+    function copiarTexto(txt, ok) {
+        const listo = () => toast(ok || "📋 Copiado");
+        try { navigator.clipboard.writeText(txt).then(listo, () => window.prompt("Copiá el texto:", txt)); }
+        catch (e) { window.prompt("Copiá el texto:", txt); }
+    }
+    function copiarMensaje(tipo, id) {
+        const p = pedidos.find(x => x.id === id);
+        if (!p) return;
+        const nom = String(p.nombre || "").trim().split(/\s+/)[0] || "";
+        const txt = tipo === "camino"
+            ? `¡Hola ${nom}! 🛵 Tu pedido de Pork & Beef ya salió y va en camino. ¡En unos minutos lo tenés! 🔥`
+            : `¡Hola ${nom}! Gracias por tu pedido en Pork & Beef 🙌 ¿Cómo estuvo la bondiola? Si te gustó, contanos o etiquetanos en Instagram @Porkybeef_ 📸 ¡Nos ayuda un montón!`;
+        copiarTexto(txt, "📋 Mensaje copiado, pegalo en WhatsApp");
+    }
+    function copiarPedido(id) {
+        const p = pedidos.find(x => x.id === id);
+        if (!p) return;
+        const lineas = [`*${p.nombre}*`, `📍 ${p.direccion}`];
+        if (p.ubicacion) lineas.push(`🗺️ ${p.ubicacion}`);
+        parsearPedido(p.pedido).forEach(it => {
+            lineas.push(it.menu ? `\n🛒 ${it.menu} x${it.cant}` : "");
+            it.detalle.forEach(l => lineas.push("  " + String(l).replace(/^\[|\]$/g, "")));
+        });
+        if (p.envio) lineas.push(`\n🚚 Envío: ${p.envio}`);
+        lineas.push(`💰 Total: ${pesos(numero(p.total))}${p.pagado ? " (pagado)" : ""}`);
+        copiarTexto(lineas.join("\n").replace(/\n{3,}/g, "\n\n"), "📋 Pedido copiado");
+    }
+    function imprimirPendientes() {
+        const cards = Array.from(document.querySelectorAll(".card:not(.entregado)"));
+        if (!cards.length) { toast("No hay pedidos pendientes para imprimir"); return; }
+        cards.forEach(c => c.classList.add("para-imprimir"));
+        const limpiar = () => { cards.forEach(c => c.classList.remove("para-imprimir")); window.removeEventListener("afterprint", limpiar); };
+        window.addEventListener("afterprint", limpiar);
+        window.print();
+    }
+    function imprimirPedido(id) {
+        const el = document.querySelector(`[data-card="${id}"]`);
+        if (!el) return;
+        el.classList.add("para-imprimir");
+        const limpiar = () => { el.classList.remove("para-imprimir"); window.removeEventListener("afterprint", limpiar); };
+        window.addEventListener("afterprint", limpiar);
+        window.print();
+    }
+
+    // Zona de entrega de un pedido: sale del texto del envío, por ejemplo "$2.000 (San Fernando)"
+    function zonaDe(p) {
+        const m = String(p.envio || "").match(/\(([^)]+)\)/);
+        if (m) return /ubicaci/i.test(m[1]) ? "Por ubicación" : m[1].trim();
+        const d = String(p.direccion || "").match(/\(([^)]+)\)\s*$/);
+        return d ? d[1].trim() : "Sin zona";
+    }
+
+    function pintarZonas() {
+        const cuenta = {};
+        pedidos.filter(p => p.estado !== "Entregado").forEach(p => { const z = zonaDe(p); cuenta[z] = (cuenta[z] || 0) + 1; });
+        const nombres = Object.keys(cuenta).sort();
+        if (zonaFiltro && !cuenta[zonaFiltro]) zonaFiltro = "";
+        const total = nombres.reduce((a, n) => a + cuenta[n], 0);
+        $("zonas").innerHTML = nombres.length > 1
+            ? `<button class="zona-chip ${zonaFiltro === "" ? "on" : ""}" data-zona="">Todas (${total})</button>` +
+              nombres.map(n => `<button class="zona-chip ${zonaFiltro === n ? "on" : ""}" data-zona="${esc(n)}">${esc(n)} (${cuenta[n]})</button>`).join("")
+            : "";
+    }
+
+    function render() {
+        pintarHoy();
+        if (typeof pintarCocina === "function") pintarCocina();
+        pintarZonas();
+        const ancho = window.matchMedia("(min-width: 1000px)").matches;
+        const tablero = vista === "tablero" && ancho;
+        $("tabsEstado").style.display = tablero ? "none" : "";
+        $("btnVista").textContent = vista === "tablero" ? "☰ Lista" : "▦ Tablero";
+        const pend = pedidos.filter(p => p.estado !== "Entregado").length;
+        const ent = pedidos.length - pend;
+        $("cntPend").textContent = pend;
+        $("cntEnt").textContent = ent;
+        document.title = (pend ? `(${pend}) ` : "") + "Pedidos · Pork & Beef";
+
+        if (tablero) {
+            const base = pedidos.filter(p => {
+                if (zonaFiltro && p.estado !== "Entregado" && zonaDe(p) !== zonaFiltro) return false;
+                if (busqueda && !(p.nombre + " " + p.direccion).toLowerCase().includes(busqueda)) return false;
+                return true;
+            });
+            const pend = base.filter(p => p.estado !== "Entregado").sort((a, b) => viejosPrimero ? a.id - b.id : b.id - a.id);
+            const entAll = base.filter(p => p.estado === "Entregado").sort((a, b) => b.id - a.id);
+            const ents = entAll.slice(0, 12);
+            visibles = pend.concat(ents).map(p => p.id);
+            const pos = visibles.indexOf(sel);
+            if (pos >= 0) selIdx = pos;
+            else { selIdx = Math.max(0, Math.min(selIdx, visibles.length - 1)); sel = visibles.length ? visibles[selIdx] : null; }
+            $("grid").className = "tablero";
+            $("grid").innerHTML = `
+                <section class="col"><h3>⏳ Por entregar <span>${pend.length}</span></h3>
+                    <div class="col-lista">${pend.length ? pend.map(tarjeta).join("") : `<div class="vacio" style="grid-column:1/-1;padding:30px 10px">🎉 No hay pedidos pendientes</div>`}</div></section>
+                <section class="col ent"><h3>✅ Entregados <span>${entAll.length}</span></h3>
+                    <div class="col-lista">${ents.length ? ents.map(tarjeta).join("") : `<div class="vacio" style="padding:30px 10px">Todavía no entregaste ninguno</div>`}</div>
+                    ${entAll.length > ents.length ? `<div class="col-nota">Se ven los últimos ${ents.length}. Cambiá a “Lista” para ver todos.</div>` : ""}</section>`;
+            if (scrollSel) { scrollSel = false; const el = document.querySelector(`[data-card="${sel}"]`); if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+            return;
+        }
+        $("grid").className = "grid";
+
+        let lista = pedidos.filter(p => {
+            const esEnt = p.estado === "Entregado";
+            if (zonaFiltro && !esEnt && zonaDe(p) !== zonaFiltro) return false;
+            if (filtro === "pendientes" && esEnt) return false;
+            if (filtro === "entregados" && !esEnt) return false;
+            if (busqueda) {
+                const txt = (p.nombre + " " + p.direccion).toLowerCase();
+                if (!txt.includes(busqueda)) return false;
+            }
+            return true;
+        });
+        lista.sort((a, b) => viejosPrimero ? a.id - b.id : b.id - a.id);
+
+        // Pedido elegido con el teclado (si desaparece, queda el que ocupa su lugar)
+        visibles = lista.map(p => p.id);
+        const pos = visibles.indexOf(sel);
+        if (pos >= 0) selIdx = pos;
+        else { selIdx = Math.max(0, Math.min(selIdx, visibles.length - 1)); sel = visibles.length ? visibles[selIdx] : null; }
+
+        // Separadores por día (con cantidad de pedidos)
+        const porDia = {};
+        lista.forEach(p => { porDia[p.dia] = (porDia[p.dia] || 0) + 1; });
+        let diaAnt = null;
+        const html = lista.map(p => {
+            let sep = "";
+            if (p.dia !== diaAnt) {
+                diaAnt = p.dia;
+                sep = `<div class="dia-sep"><span>${esc(etiquetaDia(p.dia))}</span><small>${porDia[p.dia]} pedido${porDia[p.dia] === 1 ? "" : "s"}</small></div>`;
+            }
+            return sep + tarjeta(p);
+        }).join("");
+
+        $("grid").innerHTML = lista.length
+            ? html
+            : `<div class="vacio">${filtro === "pendientes" ? "🎉 No hay pedidos pendientes" : "No hay pedidos para mostrar"}</div>`;
+
+        if (scrollSel) {
+            scrollSel = false;
+            const el = document.querySelector(`[data-card="${sel}"]`);
+            if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+    }
+
+    function mostrarAviso(msg) { $("aviso").textContent = msg; $("aviso").hidden = false; }
+    function quitarAviso() { $("aviso").hidden = true; }
+
+    let toastTimer = null;
+    function toast(msg) {
+        const t = $("toast");
+        t.textContent = msg;
+        t.hidden = false;
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => { t.hidden = true; }, 3500);
+    }
+
+    function beep() {
+        if (!sonido) return;
+        try {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            const ctx = new Ctx();
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = 880;
+            g.gain.value = 0.15;
+            o.start();
+            o.stop(ctx.currentTime + 0.3);
+        } catch (e) {}
+    }
+
+    // ============================================================
+    //  COMUNICACIÓN CON LA PLANILLA
+    // ============================================================
+    async function cargar(manual) {
+        if (enVuelo.size) return;
+        const btn = $("btnRefrescar");
+        btn.disabled = true;
+        try {
+            const r = await fetch(`${URL_SCRIPT}?clave=${encodeURIComponent(clave)}&_=${Date.now()}`);
+            const j = await r.json();
+            if (!j.ok) {
+                if (j.error === "clave") { mostrarLogin("Clave incorrecta"); return; }
+                if (j.error === "configurar") { mostrarLogin("Falta cambiar la clave en el Apps Script (línea const CLAVE)."); return; }
+                throw new Error(j.error || "Error desconocido");
+            }
+            const conocidos = new Set(pedidos.map(p => p.id));
+            const llegados = j.pedidos.filter(p => !conocidos.has(p.id) && p.estado !== "Entregado");
+            pedidos = j.pedidos;
+            if (!primeraCarga && llegados.length) {
+                llegados.forEach(p => nuevos.add(p.id));
+                toast(llegados.length === 1 ? "🔔 Llegó un pedido nuevo" : `🔔 Llegaron ${llegados.length} pedidos nuevos`);
+                beep();
+            }
+            primeraCarga = false;
+            quitarAviso();
+            $("ultima").textContent = "Actualizado " + new Date().toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
+            render();
+        } catch (err) {
+            mostrarAviso("⚠️ No se pudo actualizar los pedidos. Revisá tu conexión; se reintenta solo.");
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function cambiarEstado(id, nuevoEstado) {
+        const p = pedidos.find(x => x.id === id);
+        if (!p || enVuelo.has(id)) return;
+        const previo = p.estado;
+        enVuelo.add(id);
+        p.estado = nuevoEstado;
+        nuevos.delete(id);
+        render();
+        try {
+            const url = `${URL_SCRIPT}?accion=estado&fila=${id}&estado=${encodeURIComponent(nuevoEstado)}&nombre=${encodeURIComponent(p.nombre)}&clave=${encodeURIComponent(clave)}&_=${Date.now()}`;
+            const r = await fetch(url);
+            const j = await r.json();
+            if (!j.ok) throw new Error(j.error || "error");
+        } catch (err) {
+            p.estado = previo;
+            render();
+            toast("⚠️ No se pudo guardar el cambio. Probá de nuevo.");
+        } finally {
+            enVuelo.delete(id);
+        }
+    }
+
+    // Pagado / sin pagar
+    async function cambiarPago(id) {
+        const p = pedidos.find(x => x.id === id);
+        if (!p || enVuelo.has(id)) return;
+        const previo = !!p.pagado;
+        enVuelo.add(id);
+        p.pagado = !previo;
+        render();
+        try {
+            const url = `${URL_SCRIPT}?accion=pago&fila=${id}&pago=${p.pagado ? "si" : "no"}&nombre=${encodeURIComponent(p.nombre)}&clave=${encodeURIComponent(clave)}&_=${Date.now()}`;
+            const j = await (await fetch(url)).json();
+            if (!j.ok) throw new Error(j.error || "error");
+        } catch (err) {
+            p.pagado = previo;
+            render();
+            toast("⚠️ No se pudo guardar el pago. Probá de nuevo.");
+        } finally {
+            enVuelo.delete(id);
+        }
+    }
+
+    // Abre WhatsApp con el mensaje armado para el cliente
+    function avisarCliente(id, que) {
+        const p = pedidos.find(x => x.id === id);
+        if (!p || !p.tel) return;
+        let tel = String(p.tel).replace(/\D/g, "").replace(/^0+/, "");
+        if (tel.length === 10) tel = "549" + tel;
+        else if (/^54(?!9)/.test(tel) && tel.length === 12) tel = "549" + tel.slice(2);
+        const nombre = String(p.nombre || "").split(" ")[0];
+        const txt = que === "sale"
+            ? `¡Hola ${nombre}! Tu pedido de Pork & Beef ya salió 🛵🔥 En unos minutos lo tenés. ¡Que lo disfrutes!`
+            : `¡Hola ${nombre}! Recibimos tu pedido de Pork & Beef y ya lo estamos preparando 🔥 Te avisamos cuando salga.`;
+        window.open(`https://wa.me/${tel}?text=${encodeURIComponent(txt)}`, "_blank", "noopener");
+    }
+
+    // Abierto / cerrado
+    let abierto = true;
+    function pintarAbierto() {
+        const b = $("btnAbierto");
+        b.hidden = false;
+        b.className = "btn-mini btn-abierto " + (abierto ? "abierto" : "cerrado");
+        b.textContent = abierto ? "🟢 Abierto" : "🔴 Cerrado";
+    }
+    async function cargarAbierto() {
+        try {
+            const j = await (await fetch(`${URL_SCRIPT}?accion=local&_=${Date.now()}`)).json();
+            if (j && j.ok) { abierto = j.abierto !== false; pintarAbierto(); }
+        } catch (e) {}
+    }
+    async function cambiarAbierto() {
+        const nuevo = !abierto;
+        let msg = "";
+        if (!nuevo) {
+            msg = prompt("Cerrar la recepción de pedidos.\n\nMensaje para los clientes (opcional, por ejemplo: Volvemos a las 20 hs):", "") ;
+            if (msg === null) return;
+        } else if (!confirm("¿Abrir la recepción de pedidos?")) return;
+        try {
+            const j = await (await fetch(`${URL_SCRIPT}?accion=guardarabierto&abierto=${nuevo ? 1 : 0}&mensaje=${encodeURIComponent(msg || "")}&clave=${encodeURIComponent(clave)}&_=${Date.now()}`)).json();
+            if (!j.ok) throw new Error(j.error || "error");
+            abierto = nuevo; pintarAbierto();
+            toast(nuevo ? "🟢 Pedidos abiertos" : "🔴 Pedidos cerrados: la página avisa a los clientes");
+        } catch (e) { toast("⚠️ No se pudo cambiar. Probá de nuevo."); }
+    }
+    $("btnAbierto").addEventListener("click", cambiarAbierto);
+
+    async function borrarPedido(id) {
+        const p = pedidos.find(x => x.id === id);
+        if (!p || enVuelo.has(id)) return;
+        if (!confirm(`¿Borrar el pedido de ${p.nombre} (${pesos(numero(p.total))})?\n\nSe elimina de la planilla y no se puede deshacer.`)) return;
+        enVuelo.add(id);
+        try {
+            const url = `${URL_SCRIPT}?accion=borrar&fila=${id}&nombre=${encodeURIComponent(p.nombre)}&fecha=${encodeURIComponent(p.fecha)}&clave=${encodeURIComponent(clave)}&_=${Date.now()}`;
+            const r = await fetch(url);
+            const j = await r.json();
+            if (!j.ok) throw new Error(j.error || "error");
+            toast("🗑️ Pedido borrado");
+        } catch (err) {
+            toast("⚠️ No se pudo borrar. Actualizá e intentá de nuevo.");
+        } finally {
+            enVuelo.delete(id);
+        }
+        // Las filas de abajo cambian de número: se vuelve a cargar la lista
+        cargar(true);
+    }
+
+    // ============================================================
+    //  HISTORIAL DE CIERRES
+    // ============================================================
+    let cierres = [];
+    let vistaHist = "dias";
+
+    function resumenGrupo(lista) {
+        return lista.reduce((a, c) => ({ pedidos: a.pedidos + c.pedidos, sandwiches: a.sandwiches + c.sandwiches, total: a.total + c.total }), { pedidos: 0, sandwiches: 0, total: 0 });
+    }
+
+    function detalleHtml(c) {
+        const partes = String(c.detalle || "").split(" | ").filter(Boolean);
+        return partes.length ? partes.map(x => { const i = x.lastIndexOf(":"); return i > 0 ? `<div><span>${esc(x.slice(0, i))}</span><b>${esc(x.slice(i + 1).trim())}</b></div>` : `<div><span>${esc(x)}</span></div>`; }).join("") : "<div><span>Sin detalle</span></div>";
+    }
+
+    function estadisticasHtml(ord) {
+        const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+        const porDia = {}, menus = {}, extras = {};
+        ord.forEach(c => {
+            const g = porDia[c.diaSemana] || (porDia[c.diaSemana] = { total: 0, n: 0 });
+            g.total += c.total; g.n++;
+            String(c.detalle || "").split(" | ").forEach(x => {
+                const i = x.lastIndexOf(":"); if (i < 0) return;
+                const k = x.slice(0, i).trim(), v = x.slice(i + 1).trim();
+                if (k === "Extras") {
+                    v.split(",").forEach(e => { const m = e.trim().match(/^(\d+)\s+(.+)$/); if (m) extras[m[2]] = (extras[m[2]] || 0) + parseInt(m[1], 10); });
+                } else { menus[k] = (menus[k] || 0) + (parseInt(v, 10) || 0); }
+            });
+        });
+        const t = resumenGrupo(ord);
+        const prom = ord.length ? Math.round(t.total / ord.length) : 0;
+        const mejor = ord.slice().sort((a, b) => b.total - a.total)[0];
+        const maxProm = Math.max(1, ...dias.map(d => porDia[d] ? porDia[d].total / porDia[d].n : 0));
+        const barras = dias.map(d => {
+            const g = porDia[d], v = g ? Math.round(g.total / g.n) : 0;
+            return `<div class="barra-fila"><span>${d}</span><div class="barra-bg"><i style="width:${Math.round(v / maxProm * 100)}%"></i></div><b>${g ? esc(pesos(v)) : "—"}</b></div>`;
+        }).join("");
+        const lista = obj => { const k = Object.keys(obj).sort((a, b) => obj[b] - obj[a]); return k.length ? k.map(n => `<div class="fila"><span>${esc(n)}</span><b>${obj[n]}</b></div>`).join("") : `<div class="fila"><span>Sin datos todavía</span></div>`; };
+        return `<div class="cierre-sec"><h4>Resumen</h4>
+                <div class="fila"><span>Promedio por día cerrado</span><b>${esc(pesos(prom))}</b></div>
+                <div class="fila"><span>Mejor día</span><b>${mejor ? esc(mejor.diaSemana + " " + mejor.dia + " · " + pesos(mejor.total)) : "—"}</b></div></div>
+            <div class="cierre-sec"><h4>Venta promedio por día de la semana</h4>${barras}</div>
+            <div class="cierre-sec"><h4>Menús más vendidos</h4>${lista(menus)}</div>
+            <div class="cierre-sec"><h4>Extras más pedidos</h4>${lista(extras)}</div>`;
+    }
+
+    function pintarHistorial() {
+        const box = $("histCuerpo");
+        if (!cierres.length) { box.innerHTML = `<div class="cierre-vacio">Todavía no hay días cerrados. Cuando toques “Finalizar día” van a aparecer acá.</div>`; return; }
+        const ord = cierres.slice().sort((a, b) => b.dia.localeCompare(a.dia));
+        const t = resumenGrupo(ord);
+        let html = `<div class="kpis">
+            <div class="kpi"><b>${esc(pesos(t.total))}</b><small>Vendido en total</small></div>
+            <div class="kpi"><b>${t.pedidos}</b><small>Pedidos</small></div>
+            <div class="kpi"><b>${ord.length}</b><small>Días cerrados</small></div></div>`;
+        if (vistaHist === "stats") {
+            html += estadisticasHtml(ord);
+        } else if (vistaHist === "dias") {
+            html += ord.map(c => `<details class="hist-item"><summary><span>📅 ${esc(c.diaSemana)} ${esc(c.dia)}<br><small style="color:var(--muted)">${c.pedidos} pedidos · ${c.sandwiches} sándwiches</small></span><b>${esc(pesos(c.total))}</b></summary>
+                <div class="cuerpo">${detalleHtml(c)}</div></details>`).join("");
+        } else {
+            const clave_ = vistaHist === "semanas" ? "semana" : "mes";
+            const grupos = {};
+            ord.forEach(c => { (grupos[c[clave_]] = grupos[c[clave_]] || []).push(c); });
+            html += Object.keys(grupos).sort().reverse().map(k => {
+                const g = grupos[k], r = resumenGrupo(g);
+                return `<details class="hist-item"><summary><span>${vistaHist === "semanas" ? "🗓️ Semana" : "🗓️ Mes"} ${esc(k)}<br><small style="color:var(--muted)">${g.length} día(s) · ${r.pedidos} pedidos · ${r.sandwiches} sándwiches</small></span><b>${esc(pesos(r.total))}</b></summary>
+                    <div class="cuerpo">${g.map(c => `<div><span>${esc(c.diaSemana)} ${esc(c.dia)}</span><b>${esc(pesos(c.total))}</b></div>`).join("")}</div></details>`;
+            }).join("");
+        }
+        box.innerHTML = html;
+    }
+
+    async function abrirHistorial() {
+        $("modalHist").hidden = false;
+        $("histCuerpo").innerHTML = `<div class="cierre-vacio">Cargando...</div>`;
+        try {
+            const r = await fetch(`${URL_SCRIPT}?accion=historial&clave=${encodeURIComponent(clave)}&_=${Date.now()}`);
+            const j = await r.json();
+            if (!j.ok) throw new Error(j.error || "error");
+            cierres = j.cierres || [];
+            pintarHistorial();
+        } catch (err) {
+            $("histCuerpo").innerHTML = `<div class="cierre-warn">⚠️ No se pudo cargar el historial. Revisá tu conexión y que el Apps Script tenga la versión nueva.</div>`;
+        }
+    }
+
+    // ============================================================
+    //  FINALIZAR DÍA (cierre de caja)
+    // ============================================================
+    let cierreActual = null;
+
+    // Convierte el total a pesos enteros. Arregla los pedidos viejos que la planilla leyó como dólares
+    // ("$19.000" guardado como 19 -> se ve "$19.00"): ningún pedido cuesta menos de $1.000.
+    function numero(t) {
+        let s = String(t == null ? "" : t).replace(/[^\d.,]/g, "");
+        if (!s) return 0;
+        if (/^\d{1,3}(\.\d{3})+$/.test(s)) return parseInt(s.replace(/\./g, ""), 10);
+        if (s.includes(",") && s.includes(".")) s = s.replace(/,/g, "");
+        else if (/^\d{1,3}(,\d{3})+$/.test(s)) s = s.replace(/,/g, "");
+        else s = s.replace(",", ".");
+        const v = parseFloat(s) || 0;
+        return Math.round(v < 1000 ? v * 1000 : v);
+    }
+    function pesos(n) { return "$" + new Intl.NumberFormat("es-AR").format(n); }
+    function hoyISO() {
+        const d = new Date();
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
+
+    function armarCierre(dia) {
+        const delDia = pedidos.filter(p => p.dia === dia);
+        const entregados = delDia.filter(p => p.estado === "Entregado");
+        const c = { dia, pedidos: entregados.length, pendientes: delDia.length - entregados.length, sandwiches: 0, total: 0, menus: {}, extras: {} };
+        entregados.forEach(p => {
+            c.total += numero(p.total);
+            parsearPedido(p.pedido).forEach(it => {
+                if (!it.menu) return;
+                const cant = parseInt(it.cant, 10) || 1;
+                c.menus[it.menu] = (c.menus[it.menu] || 0) + cant;
+                c.sandwiches += (/2x1/i.test(it.menu) ? 2 : 1) * cant;
+                it.detalle.forEach(l => {
+                    const m = l.match(/^Extras:\s*(.*)$/);
+                    if (!m) return;
+                    m[1].split(",").forEach(x => {
+                        const q = x.trim().match(/^(\d+)\s*x\s*(.+)$/);
+                        if (q) c.extras[q[2].trim()] = (c.extras[q[2].trim()] || 0) + parseInt(q[1], 10);
+                    });
+                });
+            });
+        });
+        return c;
+    }
+
+    function detalleCierre(c) {
+        const partes = Object.keys(c.menus).map(k => `${k}: ${c.menus[k]}`);
+        const ex = Object.keys(c.extras).map(k => `${c.extras[k]} ${k}`);
+        if (ex.length) partes.push("Extras: " + ex.join(", "));
+        return partes.join(" | ");
+    }
+
+    function pintarCierre() {
+        const dia = $("cierreDia").value;
+        cierreActual = armarCierre(dia);
+        const c = cierreActual;
+        $("cierreLink").innerHTML = "";
+        $("cierreGuardar").textContent = "Guardar cierre en la planilla";
+        $("cierreGuardar").disabled = c.pedidos === 0;
+        let html = "";
+        if (c.pendientes > 0) {
+            html += `<div class="cierre-warn">⚠️ Quedan <b>${c.pendientes}</b> pedido(s) de este día sin marcar como entregados. No se cuentan en el cierre.</div>`;
+        }
+        if (c.pedidos === 0) {
+            html += `<div class="cierre-vacio">No hay pedidos entregados en este día.</div>`;
+        } else {
+            html += `<div class="kpis">
+                <div class="kpi"><b>${esc(pesos(c.total))}</b><small>Vendido (con envíos)</small></div>
+                <div class="kpi"><b>${c.pedidos}</b><small>Pedidos</small></div>
+                <div class="kpi"><b>${c.sandwiches}</b><small>Sándwiches</small></div>
+            </div>`;
+            html += `<div class="cierre-sec"><h4>Por menú</h4>${Object.keys(c.menus).map(k => `<div class="fila"><span>${esc(k)}</span><b>${c.menus[k]}</b></div>`).join("")}</div>`;
+            const ex = Object.keys(c.extras);
+            html += `<div class="cierre-sec"><h4>Extras</h4>${ex.length ? ex.map(k => `<div class="fila"><span>${esc(k)}</span><b>${c.extras[k]}</b></div>`).join("") : `<div class="fila"><span>Sin extras</span></div>`}</div>`;
+        }
+        $("cierreCuerpo").innerHTML = html;
+    }
+
+    function abrirCierre() {
+        $("cierreDia").value = hoyISO();
+        $("modalCierre").hidden = false;
+        pintarCierre();
+    }
+
+    function cerrarCierre() { $("modalCierre").hidden = true; }
+
+    async function guardarCierre() {
+        const c = cierreActual;
+        if (!c || c.pedidos === 0) return;
+        const btn = $("cierreGuardar");
+        btn.disabled = true;
+        btn.textContent = "Guardando...";
+        try {
+            const url = `${URL_SCRIPT}?accion=cierre&clave=${encodeURIComponent(clave)}&dia=${encodeURIComponent(c.dia)}&pedidos=${c.pedidos}&sandwiches=${c.sandwiches}&total=${c.total}&detalle=${encodeURIComponent(detalleCierre(c))}&_=${Date.now()}`;
+            const r = await fetch(url);
+            const j = await r.json();
+            if (!j.ok) throw new Error(j.error || "error");
+            btn.textContent = j.actualizado ? "✅ Cierre actualizado" : "✅ Día cerrado y guardado";
+            toast("✅ Cierre guardado en la hoja Resumen");
+            if (j.url && /^https:\/\/docs\.google\.com\//.test(j.url)) {
+                $("cierreLink").innerHTML = `<a href="${esc(j.url)}" target="_blank" rel="noopener noreferrer">📊 Ver el resumen en la planilla</a>`;
+            }
+            $("cierreLink").innerHTML += `<div style="margin-top:10px"><button class="btn-gold" id="verHist" style="padding:10px 16px">📚 Ver historial de cierres</button></div>`;
+            $("verHist").addEventListener("click", () => { cerrarCierre(); abrirHistorial(); });
+        } catch (err) {
+            btn.disabled = false;
+            btn.textContent = "Guardar cierre en la planilla";
+            toast("⚠️ No se pudo guardar el cierre. Probá de nuevo.");
+        }
+    }
+
+    // ============================================================
+    //  UBICACIÓN DEL LOCAL (de acá sale el cálculo del envío)
+    // ============================================================
+    function mapaLink(lat, lng) {
+        return `https://www.google.com/maps/search/?api=1&query=${Number(lat).toFixed(6)},${Number(lng).toFixed(6)}`;
+    }
+
+    async function abrirLocal() {
+        $("modalLocal").hidden = false;
+        $("localResultados").innerHTML = "";
+        $("localEstado").textContent = "Consultando...";
+        try {
+            const r = await fetch(`${URL_SCRIPT}?accion=local&_=${Date.now()}`);
+            const j = await r.json();
+            pintarEstadoLocal(j && j.ok ? j : null);
+        } catch (e) {
+            $("localEstado").textContent = "No se pudo consultar la ubicación guardada.";
+        }
+    }
+
+    function pintarEstadoLocal(j) {
+        if (j && typeof j.lat === "number" && typeof j.lng === "number") {
+            $("localEstado").innerHTML = `✅ <b>Ubicación guardada.</b> <a href="${mapaLink(j.lat, j.lng)}" target="_blank" rel="noopener noreferrer" style="color:var(--green);font-weight:700">Ver en el mapa</a>`;
+        } else {
+            $("localEstado").innerHTML = `⚠️ <b>Todavía no cargaste la ubicación de tu local.</b> Hasta que lo hagas, tus clientes ven solo las zonas fijas de envío.`;
+        }
+    }
+
+    async function geocodificar(q) {
+        const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=3&countrycodes=ar&accept-language=es&q=${encodeURIComponent(q)}`;
+        const r = await fetch(url);
+        const arr = await r.json();
+        return (Array.isArray(arr) ? arr : [])
+            .map(x => ({ nombre: String(x.display_name || "Resultado"), lat: Number(x.lat), lng: Number(x.lon) }))
+            .filter(x => isFinite(x.lat) && isFinite(x.lng));
+    }
+
+    function pintarResultadosLocal(lista, nota) {
+        $("localResultados").innerHTML = (nota ? `<div class="cierre-warn">${esc(nota)}</div>` : "") + lista.map(r => `
+            <div class="cierre-sec">
+                <div style="margin-bottom:8px">${esc(r.nombre)}</div>
+                <div class="modal-btns" style="margin-top:0">
+                    <a class="btn-mini" style="text-decoration:none;text-align:center;flex:1" href="${mapaLink(r.lat, r.lng)}" target="_blank" rel="noopener noreferrer">🗺️ Ver en el mapa</a>
+                    <button class="btn-gold" style="flex:1;padding:10px" data-lat="${r.lat.toFixed(6)}" data-lng="${r.lng.toFixed(6)}">Usar esta</button>
+                </div>
+            </div>`).join("");
+    }
+
+    async function buscarLocal() {
+        const q = $("localDireccion").value.trim();
+        if (!q) return;
+        $("localResultados").innerHTML = `<div class="cierre-vacio">Buscando...</div>`;
+        try {
+            let lista = await geocodificar(q);
+            let nota = "";
+            if (!lista.length && /\d/.test(q)) {
+                const sinNumero = q.replace(/\b\d+\b/g, "").replace(/\s{2,}/g, " ").replace(/\s+,/g, ",").trim();
+                lista = await geocodificar(sinNumero);
+                if (lista.length) nota = "Encontré la calle pero no el número exacto. Mirá en el mapa que el punto caiga cerca de tu local; si no, usá el botón de ubicación actual estando en el local.";
+            }
+            if (!lista.length) {
+                $("localResultados").innerHTML = `<div class="cierre-warn">No encontré esa dirección en el mapa. Si estás en tu local, tocá "Estoy en el local: usar mi ubicación actual".</div>`;
+                return;
+            }
+            pintarResultadosLocal(lista, nota);
+        } catch (e) {
+            $("localResultados").innerHTML = `<div class="cierre-warn">No se pudo buscar en el mapa ahora. Probá de nuevo en un rato.</div>`;
+        }
+    }
+
+    function ubicacionActual() {
+        if (!navigator.geolocation) { toast("⚠️ Este navegador no permite usar la ubicación."); return; }
+        $("localResultados").innerHTML = `<div class="cierre-vacio">Buscando tu ubicación...</div>`;
+        navigator.geolocation.getCurrentPosition(pos => {
+            const pr = Math.round(pos.coords.accuracy || 0);
+            pintarResultadosLocal(
+                [{ nombre: `Tu ubicación actual (precisión ±${pr} m)`, lat: pos.coords.latitude, lng: pos.coords.longitude }],
+                pr > 150 ? "La precisión es baja. Conviene hacerlo desde el celular, dentro del local y con el GPS activado." : ""
+            );
+        }, () => {
+            $("localResultados").innerHTML = `<div class="cierre-warn">No pude acceder a tu ubicación. Revisá el permiso del navegador o buscá por dirección.</div>`;
+        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    }
+
+    async function guardarLocal(lat, lng) {
+        try {
+            const r = await fetch(`${URL_SCRIPT}?accion=guardarlocal&clave=${encodeURIComponent(clave)}&lat=${lat}&lng=${lng}&_=${Date.now()}`);
+            const j = await r.json();
+            if (!j.ok) throw new Error(j.error || "error");
+            $("localResultados").innerHTML = "";
+            pintarEstadoLocal(j);
+            toast("✅ Ubicación del local guardada");
+        } catch (e) {
+            toast(e.message === "fuera" ? "⚠️ Esa ubicación no parece estar en Argentina." : "⚠️ No se pudo guardar. Probá de nuevo.");
+        }
+    }
+
+    // ============================================================
+    //  LOGIN / ARRANQUE
+    // ============================================================
+    function mostrarLogin(msg) {
+        clearInterval(timer);
+        $("app").hidden = true;
+        $("login").hidden = false;
+        $("loginError").textContent = msg || "";
+        $("inputClave").value = "";
+        $("inputClave").focus();
+    }
+
+    function iniciar() {
+        $("login").hidden = true;
+        $("app").hidden = false;
+        primeraCarga = true;
+        pedidos = [];
+        cargar();
+        cargarAbierto();
+        clearInterval(timer);
+        timer = setInterval(cargar, REFRESCO_MS);
+    }
+
+    function entrar() {
+        const v = $("inputClave").value.trim();
+        if (!v) return;
+        clave = v;
+        lsSet("pb_clave", v);
+        iniciar();
+    }
+
+    // ============================================================
+    //  EVENTOS
+    // ============================================================
+    $("btnEntrar").addEventListener("click", entrar);
+    $("inputClave").addEventListener("keydown", e => { if (e.key === "Enter") entrar(); });
+    $("btnRefrescar").addEventListener("click", () => cargar(true));
+    $("btnCierre").addEventListener("click", abrirCierre);
+    $("btnLocal").addEventListener("click", abrirLocal);
+    $("btnHistorial").addEventListener("click", abrirHistorial);
+    $("histX").addEventListener("click", () => { $("modalHist").hidden = true; });
+    $("modalHist").addEventListener("click", e => { if (e.target.id === "modalHist") $("modalHist").hidden = true; });
+    document.querySelectorAll("[data-vista]").forEach(b => b.addEventListener("click", () => {
+        document.querySelectorAll("[data-vista]").forEach(x => x.classList.remove("on"));
+        b.classList.add("on");
+        vistaHist = b.dataset.vista;
+        pintarHistorial();
+    }));
+    $("localX").addEventListener("click", () => { $("modalLocal").hidden = true; });
+    $("localBuscar").addEventListener("click", buscarLocal);
+    $("localDireccion").addEventListener("keydown", e => { if (e.key === "Enter") buscarLocal(); });
+    $("localGps").addEventListener("click", ubicacionActual);
+    $("localResultados").addEventListener("click", e => {
+        const b = e.target.closest("button[data-lat]");
+        if (b) guardarLocal(b.dataset.lat, b.dataset.lng);
+    });
+    $("modalLocal").addEventListener("click", e => { if (e.target.id === "modalLocal") $("modalLocal").hidden = true; });
+    $("cierreX").addEventListener("click", cerrarCierre);
+    $("cierreCancelar").addEventListener("click", cerrarCierre);
+    $("cierreCopiar").addEventListener("click", () => copiarTexto("Resumen del día — Pork & Beef\n" + $("cierreCuerpo").innerText.replace(/\n{2,}/g, "\n").trim(), "📋 Resumen copiado"));
+    $("cierreDia").addEventListener("change", pintarCierre);
+    $("cierreGuardar").addEventListener("click", guardarCierre);
+    $("modalCierre").addEventListener("click", e => { if (e.target.id === "modalCierre") cerrarCierre(); });
+    $("buscador").addEventListener("input", e => { busqueda = e.target.value.trim().toLowerCase(); render(); });
+    $("orden").addEventListener("change", e => { viejosPrimero = e.target.value === "viejos"; render(); });
+    function pintarSonido() { $("btnSonido").textContent = sonido ? "🔔 Sonido: activado" : "🔕 Sonido: apagado"; }
+    $("btnSonido").addEventListener("click", () => {
+        sonido = !sonido;
+        lsSet("pb_sonido", sonido ? "si" : "no");
+        pintarSonido();
+        if (sonido) beep();
+    });
+
+    // Menú ⚙️
+    function cerrarMenu() { $("menuMas").hidden = true; $("btnMenu").setAttribute("aria-expanded", "false"); }
+    $("btnMenu").addEventListener("click", e => {
+        e.stopPropagation();
+        const abrir = $("menuMas").hidden;
+        $("menuMas").hidden = !abrir;
+        $("btnMenu").setAttribute("aria-expanded", abrir ? "true" : "false");
+    });
+    document.addEventListener("click", e => { if (!e.target.closest(".menu-wrap")) cerrarMenu(); });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") cerrarMenu(); });
+    $("menuMas").addEventListener("click", cerrarMenu);
+    $("btnPrintAll").addEventListener("click", () => { cerrarMenu(); imprimirPendientes(); });
+    $("btnCsv").addEventListener("click", () => {
+        cerrarMenu();
+        const q = v => '"' + String(v == null ? "" : v).replace(/"/g, '""').replace(/\r?\n/g, " | ") + '"';
+        const filas = [["Fecha", "Día", "Cliente", "Dirección", "Pedido", "Total", "Envío", "Estado", "Pagado"]]
+            .concat(pedidos.map(p => [p.fecha, p.dia, p.nombre, p.direccion, p.pedido, numero(p.total), p.envio, p.estado, p.pagado ? "Sí" : "No"]));
+        const csv = "\uFEFF" + filas.map(f => f.map(q).join(";")).join("\r\n");
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+        a.download = "pedidos-pork-beef-" + hoyISO() + ".csv";
+        document.body.appendChild(a); a.click(); a.remove();
+        toast("⬇️ Descargado: ábrelo con Excel");
+    });
+    $("btnSalir").addEventListener("click", () => { lsSet("pb_clave", ""); clave = ""; mostrarLogin(""); });
+
+    // Zonas y vista
+    $("zonas").addEventListener("click", e => {
+        const c = e.target.closest("[data-zona]");
+        if (c) { zonaFiltro = c.dataset.zona; render(); }
+    });
+    $("btnVista").addEventListener("click", () => { vista = vista === "tablero" ? "lista" : "tablero"; lsSet("pb_vista", vista); render(); });
+    window.matchMedia("(min-width: 1000px)").addEventListener("change", render);
+    document.querySelectorAll(".tab[data-filtro]").forEach(btn => btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab[data-filtro]").forEach(b => b.classList.remove("on"));
+        btn.classList.add("on");
+        filtro = btn.dataset.filtro;
+        render();
+    }));
+    $("grid").addEventListener("click", e => {
+        const pr = e.target.closest("button[data-imprimir]");
+        if (pr) { imprimirPedido(Number(pr.dataset.imprimir)); return; }
+        const ms = e.target.closest("button[data-msj]");
+        if (ms) { copiarMensaje(ms.dataset.msj, Number(ms.dataset.id)); return; }
+        const cp = e.target.closest("button[data-copiar]");
+        if (cp) { copiarPedido(Number(cp.dataset.copiar)); return; }
+        const pg = e.target.closest("button[data-pago]");
+        if (pg) { cambiarPago(Number(pg.dataset.pago)); return; }
+        const av = e.target.closest("button[data-avisar]");
+        if (av) { avisarCliente(Number(av.dataset.avisar), av.dataset.que); return; }
+        const d = e.target.closest("button[data-borrar]");
+        if (d) { borrarPedido(Number(d.dataset.borrar)); return; }
+        const b = e.target.closest("button[data-id]");
+        if (b) cambiarEstado(Number(b.dataset.id), b.dataset.estado);
+    });
+
+    // Elegir un pedido tocándolo
+    $("grid").addEventListener("click", e => {
+        const c = e.target.closest("[data-card]");
+        if (c && !e.target.closest("button, a")) {
+            sel = Number(c.dataset.card);
+            render();
+        }
+    });
+
+    // Atajos de teclado
+    document.addEventListener("keydown", e => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if ($("app").hidden || !$("modalCierre").hidden || !$("modalLocal").hidden || !$("modalHist").hidden) return;
+        const t = e.target && e.target.tagName;
+        if (t === "INPUT" || t === "SELECT" || t === "TEXTAREA") return;
+        if (!visibles.length) return;
+        if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+            e.preventDefault();
+            const i = Math.max(0, Math.min(visibles.length - 1, visibles.indexOf(sel) + (e.key === "ArrowDown" ? 1 : -1)));
+            sel = visibles[i];
+            scrollSel = true;
+            render();
+        } else if (e.key === "Enter" && sel !== null) {
+            e.preventDefault();
+            const p = pedidos.find(x => x.id === sel);
+            if (p) {
+                if (p.estado !== "Entregado") {
+                    // pasa al siguiente pedido pendiente para seguir marcando sin tocar nada
+                    const i = visibles.indexOf(p.id);
+                    const sig = visibles.slice(i + 1).concat(visibles.slice(0, i)).find(id => { const q = pedidos.find(x => x.id === id); return q && q.estado !== "Entregado"; });
+                    if (sig !== undefined) { sel = sig; scrollSel = true; }
+                }
+                cambiarEstado(p.id, p.estado === "Entregado" ? "Pendiente" : "Entregado");
+            }
+        } else if (e.key === "Delete" && sel !== null) {
+            e.preventDefault();
+            borrarPedido(sel);
+        }
+    });
+
+    pintarSonido();
+    if (clave) iniciar(); else mostrarLogin("");
+
+    // ---------- SE ACABÓ ----------
+    const ESTILOS_PB = [["classic","Porky Classic"],["melt","Pork Melt"],["voleta","Porkvoleta"],["mozza","Pork Mozza"],["criolla","Pork Criolla"],["chimi","Pork Chimichurri"]];
+    async function abrirAgotado() {
+        cerrarMenu();
+        let actuales = [];
+        try { const j = await (await fetch(`${URL_SCRIPT}?accion=local&_=${Date.now()}`)).json(); actuales = Array.isArray(j.agotados) ? j.agotados : []; } catch (e) { toast("⚠️ No se pudo leer lo que ya estaba marcado"); }
+        $("agLista").innerHTML = ESTILOS_PB.map(([id, n]) => `<label class="ag-fila${actuales.includes(id) ? " off" : ""}"><span>${esc(n)}</span><input type="checkbox" data-ag="${id}" ${actuales.includes(id) ? "checked" : ""}></label>`).join("");
+        $("agModal").hidden = false;
+    }
+    async function guardarAgotado() {
+        const ids = Array.from(document.querySelectorAll("#agLista input:checked")).map(c => c.dataset.ag).join(",");
+        try {
+            const j = await (await fetch(`${URL_SCRIPT}?accion=guardaragotados&ids=${encodeURIComponent(ids)}&clave=${encodeURIComponent(clave)}&_=${Date.now()}`)).json();
+            if (!j.ok) throw new Error(j.error || "error");
+            $("agModal").hidden = true;
+            toast(ids ? "🚫 Guardado: la página ya muestra lo agotado" : "✅ Todo disponible de nuevo");
+        } catch (e) { toast("⚠️ No se pudo guardar. Probá de nuevo."); }
+    }
+    $("btnAgotado").addEventListener("click", abrirAgotado);
+    $("agCancelar").addEventListener("click", () => { $("agModal").hidden = true; });
+    $("agGuardar").addEventListener("click", guardarAgotado);
+    $("agLista").addEventListener("change", e => { const f = e.target.closest(".ag-fila"); if (f) f.classList.toggle("off", e.target.checked); });
+
+    // ---------- MODO COCINA ----------
+    function claveListo(p) { return `${p.fecha}|${p.nombre}`; }
+    function listos() { try { return JSON.parse(localStorage.getItem("pb_listos") || "[]"); } catch (e) { return []; } }
+    function pintarCocina() {
+        if ($("cocina").hidden) return;
+        const l = listos();
+        const pend = pedidos.filter(p => p.estado !== "Entregado").sort((a, b) => a.id - b.id);
+        const hechos = pend.filter(p => l.includes(claveListo(p)));
+        const orden = pend.filter(p => !l.includes(claveListo(p))).concat(hechos);
+        let faltan = 0;
+        pend.filter(p => !l.includes(claveListo(p))).forEach(p => parsearPedido(p.pedido).forEach(it => { if (it.menu) faltan += (parseInt(it.cant, 10) || 1) * (/2x1/i.test(it.menu) ? 2 : 1); }));
+        $("coResumen").textContent = pend.length ? `Faltan ${faltan} sándwich${faltan === 1 ? "" : "es"} · ${pend.length - hechos.length} pedido${pend.length - hechos.length === 1 ? "" : "s"} por armar` : "";
+        if (!pend.length) { $("coGrid").innerHTML = `<div class="co-vacio">🎉 No hay pedidos para preparar</div>`; return; }
+        $("coGrid").innerHTML = orden.map(p => {
+            const hecho = l.includes(claveListo(p)), m = hace(p);
+            const items = parsearPedido(p.pedido).map(it => it.menu
+                ? `<div class="co-item">🛒 ${esc(it.menu)} × ${esc(it.cant)}</div><ul>${it.detalle.map(lineaHtml).join("")}</ul>`
+                : `<ul>${it.detalle.map(lineaHtml).join("")}</ul>`).join("");
+            return `<div class="co-card${hecho ? " listo" : ""}"><h3>${esc(p.nombre)}</h3><div class="co-sub">${m === null ? "" : textoHace(m)}${p.pagado ? " · 💵 pagado" : ""}</div>${items}<button class="co-btn" data-listo="${esc(claveListo(p))}">${hecho ? "↩️ Volver a armar" : "✅ Listo"}</button></div>`;
+        }).join("");
+    }
+    function abrirCocina() { $("cocina").hidden = false; document.body.style.overflow = "hidden"; pintarCocina(); }
+    function cerrarCocina() { $("cocina").hidden = true; document.body.style.overflow = ""; }
+    $("btnCocina").addEventListener("click", abrirCocina);
+    $("coSalir").addEventListener("click", cerrarCocina);
+    document.addEventListener("keydown", e => { if (e.key === "Escape") { cerrarCocina(); $("agModal").hidden = true; $("mnModal").hidden = true; $("sisModal").hidden = true; } });
+    $("coGrid").addEventListener("click", e => {
+        const b = e.target.closest("button[data-listo]"); if (!b) return;
+        const k = b.dataset.listo; let l = listos();
+        l = l.includes(k) ? l.filter(x => x !== k) : l.concat(k).slice(-200);
+        try { localStorage.setItem("pb_listos", JSON.stringify(l)); } catch (er) {}
+        pintarCocina();
+    });
+    setInterval(pintarCocina, 5000);
+
+    // ---------- CARGAR PEDIDO (voz o a mano) ----------
+    const PRECIOS_MN = { "2x1 Con papas": 16000, "2x1 Sin papas": 14000, "1 Sándwich Con papas": 16000, "1 Sándwich Sin papas": 14000 };
+    function sinAcentos(t) { return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); }
+    const NUMS_MN = { un: 1, uno: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6 };
+    const mayus = t => String(t).replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase());
+    function aNumero(x) { return NUMS_MN[x] || parseInt(x, 10) || 0; }
+    function precioMn() {
+        const base = PRECIOS_MN[$("mnCombo").value] || 0;
+        const envio = parseInt($("mnZona").value.split("|")[0], 10) || 0;
+        return base * (parseInt($("mnCant").value, 10) || 1) + envio;
+    }
+    function recalcMn() { $("mnTotal").value = precioMn(); }
+    function iniciarMn() {
+        const opts = '<option value="">—</option>' + ESTILOS_PB.map(([id, n]) => `<option>${esc(n)}</option>`).join("");
+        $("mnEst1").innerHTML = opts; $("mnEst2").innerHTML = opts;
+        ["mnNombre", "mnDir", "mnTexto", "mnNota"].forEach(i => { $(i).value = ""; });
+        $("mnCombo").selectedIndex = 0; $("mnCant").selectedIndex = 0; $("mnZona").selectedIndex = 0;
+        $("mnEstado").textContent = ""; recalcMn();
+    }
+    function interpretarLocal(texto) {
+        const t = sinAcentos(texto), orig = String(texto).toLowerCase();
+        const dos = /(2\s*x\s*1|dos por uno|2 por 1|dos por 1|2 por uno)/.test(t);
+        const sinP = /sin papas/.test(t);
+        $("mnCombo").value = (dos ? "2x1 " : "1 Sándwich ") + (sinP ? "Sin papas" : "Con papas");
+        let cant = 1;
+        const mc = t.match(/\b(un|uno|una|dos|tres|cuatro|cinco|seis|\d)\s+(combos?|2x1|dos por uno|sandwich(?:es)?|bondiolas?)/);
+        if (mc && !(dos && /^(sandwich|bondiola)/.test(mc[2]))) cant = aNumero(mc[1]) || 1;
+        $("mnCant").value = String(Math.min(cant, 6));
+        const claves = [["Porky Classic", /(classic|clasic|porky)/], ["Pork Melt", /(melt|cheddar)/], ["Porkvoleta", /(voleta|provoleta)/], ["Pork Mozza", /(mozza|mozzarella|muzza|muzzarella)/], ["Pork Criolla", /criolla/], ["Pork Chimichurri", /(chimi)/]];
+        const hallados = claves.map(([n, re]) => ({ n, i: t.search(re) })).filter(x => x.i >= 0).sort((a, b) => a.i - b.i).map(x => x.n);
+        $("mnEst1").value = hallados[0] || ""; $("mnEst2").value = (dos && hallados[1]) || "";
+        const zonas = [["San Fernando", /san fernando/], ["San Isidro", /san isidro/], ["Tigre", /tigre/], ["Retira en el local", /(retira|busca|paso a buscar)/]];
+        const z = zonas.find(([n, re]) => re.test(t));
+        if (z) Array.from($("mnZona").options).forEach((o, k) => { if (o.value.split("|")[1] === z[0]) $("mnZona").selectedIndex = k; });
+        const mn = orig.match(/(?:a nombre de|nombre|para|cliente)\s+([a-záéíóúñü]+(?:\s+[a-záéíóúñü]+)?)/);
+        if (mn) $("mnNombre").value = mayus(mn[1]);
+        const md = orig.match(/(?:direcci[oó]n|calle|vive en|en la calle|en)\s+((?:[a-záéíóúñü]+\s+)?\d+[^,]*)/);
+        if (md) $("mnDir").value = mayus(md[1].trim());
+        const sins = []; const re = /sin ([a-z]+)/g; let m;
+        while ((m = re.exec(t)) !== null) if (m[1] !== "papas") sins.push("Sin " + m[1]);
+        if (sins.length) $("mnNota").value = sins.join(", ");
+        recalcMn();
+    }
+    // Primero reglas simples (instantáneo); si el Apps Script tiene clave de IA, la IA corrige y completa
+    async function interpretarMn(texto) {
+        interpretarLocal(texto);
+        $("mnEstado").textContent = "🤖 Interpretando con IA…";
+        try {
+            const j = await (await fetch(`${URL_SCRIPT}?accion=interpretar&texto=${encodeURIComponent(texto)}&clave=${encodeURIComponent(clave)}&_=${Date.now()}`)).json();
+            if (!j.ok) { $("mnEstado").textContent = j.error === "sin_clave_ia" ? "Listo (sin IA). Revisá los datos antes de guardar." : "No se pudo usar la IA; se usaron reglas simples. Revisá los datos."; return; }
+            if (j.nombre) $("mnNombre").value = j.nombre;
+            if (j.direccion) $("mnDir").value = j.direccion;
+            if (j.combo) $("mnCombo").value = j.combo;
+            $("mnCant").value = String(Math.min(j.cantidad || 1, 6));
+            $("mnEst1").value = j.estilo1 || ""; $("mnEst2").value = j.estilo2 || "";
+            if (j.zona) Array.from($("mnZona").options).forEach((o, k) => { if (o.value.split("|")[1] === j.zona) $("mnZona").selectedIndex = k; });
+            $("mnNota").value = j.nota || "";
+            recalcMn();
+            $("mnEstado").textContent = "🤖 Listo, interpretado con IA. Revisá los datos antes de guardar.";
+        } catch (e) { $("mnEstado").textContent = "Listo. Revisá los datos antes de guardar."; }
+    }
+    function abrirMn() { cerrarMenu(); iniciarMn(); $("mnModal").hidden = false; }
+    let reco = null;
+    function hablarMn() {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SR) { $("mnEstado").textContent = "Este navegador no tiene dictado por voz. Podés escribir el pedido o usar el micrófono del teclado del celular."; return; }
+        if (reco) { reco.stop(); return; }
+        reco = new SR(); reco.lang = "es-AR"; reco.interimResults = true; reco.continuous = false;
+        $("mnMic").classList.add("on"); $("mnEstado").textContent = "Escuchando… hablá ahora";
+        reco.onresult = e => { let tx = ""; for (let i = 0; i < e.results.length; i++) tx += e.results[i][0].transcript; $("mnTexto").value = tx; };
+        reco.onerror = e => { $("mnEstado").textContent = e.error === "not-allowed" ? "Falta el permiso del micrófono: habilitalo en el navegador." : "No se pudo escuchar. Probá de nuevo."; };
+        reco.onend = () => { $("mnMic").classList.remove("on"); reco = null; if ($("mnTexto").value.trim()) { interpretarMn($("mnTexto").value); } };
+        try { reco.start(); } catch (e) { reco = null; $("mnMic").classList.remove("on"); }
+    }
+    async function guardarMn() {
+        const nombre = $("mnNombre").value.trim(), dir = $("mnDir").value.trim();
+        if (!nombre) { toast("Falta el nombre"); $("mnNombre").focus(); return; }
+        const combo = $("mnCombo").value, cant = parseInt($("mnCant").value, 10) || 1;
+        const e1 = $("mnEst1").value, e2 = $("mnEst2").value, nota = $("mnNota").value.replace(/\s+/g, " ").trim().slice(0, 200);
+        const es2x1 = /^2x1/.test(combo);
+        let desc;
+        if (!es2x1) desc = "Sándwich Individual:" + (e1 ? "\n  • Estilo: " + e1 : "");
+        else if (e2 && e2 !== e1) desc = "Sándwich A:" + (e1 ? "\n  • Estilo: " + e1 : "") + "\nSándwich B:\n  • Estilo: " + e2;
+        else desc = "2 Sándwiches iguales:" + (e1 ? "\n  • Estilo: " + e1 : "");
+        const lineas = [`[Ítem #1 (${combo}) x${cant}: ${desc.replace(/\n/g, " | ")}]`];
+        if (nota) lineas.push(`[Nota: ${nota}]`);
+        const [envio, zona] = $("mnZona").value.split("|");
+        const total = parseInt(String($("mnTotal").value).replace(/\D/g, ""), 10) || precioMn();
+        const fmt = n => "$" + new Intl.NumberFormat("es-AR").format(n);
+        const params = new URLSearchParams();
+        let fecha; try { fecha = new Date().toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", hour12: false }); } catch (er) { fecha = new Date().toLocaleString(); }
+        params.append("Fecha", fecha); params.append("Nombre", nombre);
+        params.append("Direccion", `${dir || "Sin dirección"} (${zona})`);
+        params.append("Pedido", lineas.join("\n")); params.append("Total", fmt(total));
+        params.append("Ubicacion", ""); params.append("Envio", `${fmt(parseInt(envio, 10) || 0)} (${zona})`);
+        $("mnGuardar").disabled = true;
+        try {
+            await fetch(URL_SCRIPT, { method: "POST", body: params, mode: "no-cors" });
+            $("mnModal").hidden = true; toast("✅ Pedido cargado");
+            setTimeout(() => { if (typeof cargar === "function") cargar(); }, 1500);
+        } catch (er) { toast("⚠️ No se pudo guardar. Probá de nuevo."); }
+        $("mnGuardar").disabled = false;
+    }
+    $("btnManual").addEventListener("click", abrirMn);
+    $("mnMic").addEventListener("click", hablarMn);
+    $("mnCancelar").addEventListener("click", () => { if (reco) reco.stop(); $("mnModal").hidden = true; });
+    $("mnGuardar").addEventListener("click", guardarMn);
+    $("mnTexto").addEventListener("change", () => interpretarMn($("mnTexto").value));
+    ["mnCombo", "mnCant", "mnZona"].forEach(i => $(i).addEventListener("change", recalcMn));
+
+    // ---------- ESTADO DEL SISTEMA ----------
+    let reporteSis = "";
+    async function abrirSistema() {
+        cerrarMenu(); $("sisModal").hidden = false; $("sisCuerpo").textContent = "Revisando…";
+        try {
+            const j = await (await fetch(`${URL_SCRIPT}?accion=sistema&clave=${encodeURIComponent(clave)}&_=${Date.now()}`)).json();
+            if (!j.ok) throw new Error(j.error || "error");
+            const fila = (ok, t, aviso) => `<div class="ag-fila${ok ? "" : " off"}"><span>${ok ? "✅" : (aviso ? "⚠️" : "❌")} ${esc(t)}</span></div>`;
+            const errs = j.errores || [];
+            $("sisCuerpo").innerHTML =
+                fila(true, "Apps Script publicado · versión " + j.version) +
+                fila(j.ia, j.ia ? `Inteligencia artificial activada (${j.modelo}) · chat hoy: ${j.chatHoy}/${j.limiteChat}` : "IA sin activar: falta pegar ANTHROPIC_KEY en el Apps Script (por eso no aparece el asistente en la página)", true) +
+                fila(j.mp, j.mp ? "Mercado Pago: botón de pago activado" : "Mercado Pago: falta MP_TOKEN (la página muestra solo el alias)", true) +
+                fila(j.email, j.email ? "Aviso por email activado" : "Aviso por email apagado (EMAIL_AVISO vacío)", true) +
+                fila(j.local, j.local ? "Ubicación del local cargada" : "Falta cargar la ubicación del local (menú > Ubicación del local)", true) +
+                fila(j.abierto, j.abierto ? "Recibiendo pedidos" : "Pedidos cerrados ahora", true) +
+                fila(!(j.agotados || []).length, (j.agotados || []).length ? "Agotado: " + j.agotados.join(", ") : "Nada agotado", true) +
+                fila(!j.totalErrores, j.totalErrores ? `Errores registrados en la página: ${j.totalErrores} (últimos abajo)` : "Sin errores registrados en la página") +
+                (errs.length ? `<div class="mn-estado" style="margin-top:8px">${errs.slice().reverse().map(e => `${esc(e[0])} · ${esc(e[1])}: ${esc(e[2])}`).join("<br>")}</div>` : "");
+            reporteSis = `REPORTE Pork & Beef — ${new Date().toLocaleString("es-AR")}\nVersión Apps Script: ${j.version}\nIA: ${j.ia ? "sí" : "no"} · MP: ${j.mp ? "sí" : "no"} · Email: ${j.email ? "sí" : "no"} · Ubicación: ${j.local ? "sí" : "no"} · Abierto: ${j.abierto ? "sí" : "no"}\nAgotados: ${(j.agotados || []).join(", ") || "ninguno"}\nErrores (${j.totalErrores}):\n` + (errs.length ? errs.map(e => `- ${e[0]} | ${e[1]} | ${e[2]} | ${e[3]}`).join("\n") : "ninguno");
+        } catch (e) {
+            $("sisCuerpo").innerHTML = `<div class="ag-fila off"><span>❌ No se pudo consultar el Apps Script. Puede que no esté publicado, que la clave sea otra o que falte pegar el script nuevo.</span></div>`;
+            reporteSis = `REPORTE Pork & Beef — ${new Date().toLocaleString("es-AR")}\nNo se pudo consultar el Apps Script (accion=sistema). Error: ${e && e.message}`;
+        }
+    }
+    $("btnSistema").addEventListener("click", abrirSistema);
+    $("sisCerrar").addEventListener("click", () => { $("sisModal").hidden = true; });
+    $("sisCopiar").addEventListener("click", () => copiarTexto(reporteSis || "Sin datos", "📋 Reporte copiado: pegáselo a Claude"));
+</script>
+</body>
+</html>
